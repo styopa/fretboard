@@ -1,6 +1,4 @@
 class Fretboard {
-  static ns = 'http://www.w3.org/2000/svg';
-
   #svg;
   #width;
   #height;
@@ -10,41 +8,58 @@ class Fretboard {
     const dimensions = svg.attributes['viewBox'].value.split(/\D+/);
     [this.#width, this.#height] = [dimensions[2], dimensions[3]];
 
+    this.add_inlays();
+
+    // draw frets
     for (let i = 1; i <= 13; i++) {
-      this.add_fret(i);
+      this.add_child(this.#svg, 'path', {
+        d: `M${this.get_fret_x(i)} 0 V ${this.#height}`,
+        class: 'fret'
+      });
     }
 
+    // draw strings
     for (let i = 1; i <= 6; i++) {
-      this.add_string(i);
+      this.add_child(this.#svg, 'path', {
+        d: `M0 ${this.get_string_y(i)} H ${this.#width}`,
+        class: 'string'
+      });
     }
   }
 
-  add_attr(element, name, value) {
-    const attr = document.createAttribute(name);
-    attr.value = value;
-    element.setAttributeNode(attr);
+  get_fret_x(i) {
+    return this.#width * (2 - 1.059463 ** (13 - i));
   }
 
-  add_string(i) {
-    const y = this.#height / 7 * i;
-    const path = document.createElementNS(Fretboard.ns, 'path');
-    this.add_attr(path, 'd', `M0 ${y} H ${this.#width}`);
-    this.add_attr(path, 'class', 'string');
-    this.#svg.appendChild(path);
+  get_string_y(i) {
+    return this.#height / 7 * i;
   }
 
-  add_fret(i) {
-    const x = this.#width * (2 - 1.059463 ** (13 - i));
-    const path = document.createElementNS(Fretboard.ns, 'path');
-    this.add_attr(path, 'd', `M${x} 0 V ${this.#height}`);
-    this.add_attr(path, 'class', 'fret');
-    this.#svg.appendChild(path);
+  add_child(parnt, child_name, attrs) {
+    const child = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      child_name
+    );
+    for (let name in attrs) {
+      let attr = document.createAttribute(name);
+      attr.value = attrs[name];
+      child.setAttributeNode(attr);
+    }
+    parnt.appendChild(child);
+  }
+
+  add_inlays() {
+    const middle_y = this.#height / 2;
+
+    for (let i of [3, 5, 7, 9]) {
+      let curr = this.get_fret_x(i);
+      let prev = this.get_fret_x(i - 1);
+      let x = (curr + prev) / 2;
+    }
   }
 }
 
-function draw_fretboard() {
+window.addEventListener('load', function () {
   const svg = document.getElementById('fretboard');
   const f = new Fretboard(svg);
-}
-
-window.addEventListener('load', draw_fretboard, false);
+}, false);
