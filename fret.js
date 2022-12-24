@@ -9,9 +9,9 @@ class Fretboard {
   constructor(svg) {
     this.#svg = svg;
     const dimensions = svg.attributes['viewBox'].value.split(/\D+/);
+    this.#margin = 10;
     this.#x = 0;
     this.#y = 0;
-    this.#margin = 10;
     this.#width = dimensions[2];
     this.#height = dimensions[3];
 
@@ -19,7 +19,9 @@ class Fretboard {
 
     // draw frets
     for (let i = 1; i <= 13; i++) {
-      this.add_line(true, this.get_fret_x(i), 'fret');
+      let x = this.get_fret_x(i);
+      console.log(`Fret ${i} distance from nut ${Math.round(x)}`);
+      this.add_line(true, x, 'fret');
     }
 
     // draw strings
@@ -40,7 +42,9 @@ class Fretboard {
   }
 
   get_fret_x(i) {
-    return this.#width * (2 - 1.059463 ** (13 - i));
+    const len_12_frets = this.#width - this.#margin * 2;
+    const len_from_nut = len_12_frets * (2 - 1.059463 ** (12 - i));
+    return this.#margin + len_from_nut;
   }
 
   get_string_y(i) {
