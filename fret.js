@@ -1,35 +1,50 @@
-function add_attr(element, name, value) {
-  const attr = document.createAttribute(name);
-  attr.value = value;
-  element.setAttributeNode(attr);
-}
+class Fretboard {
+  static ns = 'http://www.w3.org/2000/svg';
 
-function add_path(element, data, cls) {
-  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  add_attr(path, 'd', data);
-  add_attr(path, 'class', cls);
-  element.appendChild(path);
-}
+  #svg;
+  #width;
+  #height;
 
-function get_fret_x(width, i) {
-  return width * (2 - 1.059463 ** (13 - i));
-}
+  constructor(svg) {
+    this.#svg = svg;
+    const dimensions = svg.attributes['viewBox'].value.split(/\D+/);
+    [this.#width, this.#height] = [dimensions[2], dimensions[3]];
 
-function get_string_y(height, i) {
-  return height / 7 * i;
+    for (let i = 1; i <= 13; i++) {
+      this.add_fret(i);
+    }
+
+    for (let i = 1; i <= 6; i++) {
+      this.add_string(i);
+    }
+  }
+
+  add_attr(element, name, value) {
+    const attr = document.createAttribute(name);
+    attr.value = value;
+    element.setAttributeNode(attr);
+  }
+
+  add_string(i) {
+    const y = this.#height / 7 * i;
+    const path = document.createElementNS(Fretboard.ns, 'path');
+    this.add_attr(path, 'd', `M0 ${y} H ${this.#width}`);
+    this.add_attr(path, 'class', 'string');
+    this.#svg.appendChild(path);
+  }
+
+  add_fret(i) {
+    const x = this.#width * (2 - 1.059463 ** (13 - i));
+    const path = document.createElementNS(Fretboard.ns, 'path');
+    this.add_attr(path, 'd', `M${x} 0 V ${this.#height}`);
+    this.add_attr(path, 'class', 'fret');
+    this.#svg.appendChild(path);
+  }
 }
 
 function draw_fretboard() {
   const svg = document.getElementById('fretboard');
-  const width = 700, height = 200;
-
-  for (let i = 1; i <= 6; i++) {
-    add_path(svg, `M0 ${get_string_y(height, i)} H ${width}`, 'string');
-  }
-
-  for (let i = 1; i <= 13; i++) {
-    add_path(svg, `M${get_fret_x(width, i)} 0 V ${height}`, 'fret');
-  }
+  const f = new Fretboard(svg);
 }
 
 window.addEventListener('load', draw_fretboard, false);
