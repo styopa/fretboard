@@ -74,7 +74,7 @@ class Fretboard {
     const inlay_attrs = {
       cx: undefined,
       cy: this.#height / 2,
-      r: 8,
+      r: 4,
       class: 'inlay'
     }
 
@@ -84,6 +84,12 @@ class Fretboard {
     }
 
     // double inlay on 12th fret
+    inlay_attrs.cx = this.get_inlay_x(12);
+    let inlay_y = this.#height * 5 / 14;
+    for (let y of [inlay_y, this.#height - inlay_y]) {
+      inlay_attrs.cy = y;
+      this.add_child(this.#svg, 'circle', inlay_attrs);
+    }
   }
 }
 
