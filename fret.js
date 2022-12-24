@@ -49,12 +49,18 @@ class Fretboard {
   }
 
   add_inlays() {
-    const middle_y = this.#height / 2;
+    const inlay_attrs = {
+      cx: undefined,
+      cy: this.#height / 2,
+      r: 8,
+      class: 'inlay'
+    }
 
     for (let i of [3, 5, 7, 9]) {
       let curr = this.get_fret_x(i);
       let prev = this.get_fret_x(i - 1);
-      let x = (curr + prev) / 2;
+      inlay_attrs.cx = (curr + prev) / 2;
+      this.add_child(this.#svg, 'circle', inlay_attrs);
     }
   }
 }

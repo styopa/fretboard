@@ -7,10 +7,10 @@ svg {
 }
 
 .fret {
-  stroke: #dfd7b7;
+  stroke: #e0e0e0;
   stroke-width: 4;
 }
 
 .inlay {
-  fill: #c0c0c0;
+  fill: #e0e0e0;
 }
