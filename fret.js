@@ -9,7 +9,7 @@ class Fretboard {
   constructor(svg) {
     this.#svg = svg;
     const dimensions = svg.attributes['viewBox'].value.split(/\D+/);
-    this.#margin = 40;
+    this.#margin = 20;
     this.#x = 0;
     this.#y = 0;
     this.#width = dimensions[2];

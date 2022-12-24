@@ -1,21 +1,21 @@
 svg {
-  background: #efe7c7;
+  background: #3f1a10;
 }
 
 .string {
-  stroke: #666;
+  stroke: #ded6cd;
 }
 
 .fret {
-  stroke: #e0e0e0;
+  stroke: #97877c;
   stroke-width: 4;
 }
 
 .inlay {
-  fill: #e0e0e0;
+  fill: #cdcdcd;
 }
 
 .nut {
-  stroke: #dfd7b7;
+  stroke: #f5e4b9;
   stroke-width: 8;
 }
