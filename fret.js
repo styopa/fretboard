@@ -11,17 +11,24 @@ function add_path(element, data, cls) {
   element.appendChild(path);
 }
 
+function get_fret_x(width, i) {
+  return width * (2 - 1.059463 ** (13 - i));
+}
+
+function get_string_y(height, i) {
+  return height / 7 * i;
+}
+
 function draw_fretboard() {
   const svg = document.getElementById('fretboard');
   const width = 700, height = 200;
 
   for (let i = 1; i <= 6; i++) {
-    add_path(svg, `M0 ${height / 7 * i} H ${width}`, 'string');
+    add_path(svg, `M0 ${get_string_y(height, i)} H ${width}`, 'string');
   }
 
   for (let i = 1; i <= 13; i++) {
-    let left = width * (2 - 1.059463 ** (13 - i));
-    add_path(svg, `M${left} 0 V ${height}`, 'fret');
+    add_path(svg, `M${get_fret_x(width, i)} 0 V ${height}`, 'fret');
   }
 }
 
