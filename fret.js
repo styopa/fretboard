@@ -66,6 +66,10 @@ class Fretboard {
     parnt.appendChild(child);
   }
 
+  get_inlay_x(i) {
+    return (this.get_fret_x(i) + this.get_fret_x(i - 1)) / 2;
+  }
+
   add_inlays() {
     const inlay_attrs = {
       cx: undefined,
@@ -75,11 +79,11 @@ class Fretboard {
     }
 
     for (let i of [3, 5, 7, 9]) {
-      let curr = this.get_fret_x(i);
-      let prev = this.get_fret_x(i - 1);
-      inlay_attrs.cx = (curr + prev) / 2;
+      inlay_attrs.cx = this.get_inlay_x(i);
       this.add_child(this.#svg, 'circle', inlay_attrs);
     }
+
+    // double inlay on 12th fret
   }
 }
 
