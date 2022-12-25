@@ -1,7 +1,5 @@
 class Fretboard {
   #svg;
-  #x;
-  #y;
   #width;
   #height;
   #margin;
@@ -10,8 +8,6 @@ class Fretboard {
     this.#svg = svg;
     const dimensions = svg.attributes['viewBox'].value.split(/\D+/);
     this.#margin = 20;
-    this.#x = 0;
-    this.#y = 0;
     this.#width = dimensions[2];
     this.#height = dimensions[3];
 
@@ -38,8 +34,8 @@ class Fretboard {
 
   add_line(vertical, pos, cls) {
     const params = vertical ?
-      [pos, this.#y, 'V', this.#height] :
-      [this.#x, pos, 'H', this.#width];
+      [pos, 0, 'V', this.#height] :
+      [0, pos, 'H', this.#width];
     params.unshift('M');
     return this.add_child(this.#svg, 'path', {
       d: params.join(' '),
