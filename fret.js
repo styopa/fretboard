@@ -15,7 +15,8 @@ class Fretboard {
     this.#width = dimensions[2];
     this.#height = dimensions[3];
 
-    this.add_line(true, this.#margin, 'nut');
+    const nut = this.add_line(true, this.#margin, 'nut');
+    this.add_attr(nut, 'stroke-width', 8);
 
     this.add_inlays();
 
@@ -23,7 +24,8 @@ class Fretboard {
     for (let i = 1; i < 13; i++) {
       let x = this.get_fret_x(i);
       //console.log(`Fret ${i} distance from nut ${Math.round(x)}`);
-      this.add_line(true, x, 'fret');
+      let fret = this.add_line(true, x, 'fret');
+      this.add_attr(fret, 'stroke-width', 4);
     }
 
     // draw strings

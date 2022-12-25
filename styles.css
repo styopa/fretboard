@@ -8,7 +8,6 @@ svg {
 
 .fret {
   stroke: #97877c;
-  stroke-width: 4;
 }
 
 .inlay {
@@ -17,5 +16,4 @@ svg {
 
 .nut {
   stroke: #f5e4b9;
-  stroke-width: 8;
 }
