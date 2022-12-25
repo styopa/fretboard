@@ -27,8 +27,10 @@ class Fretboard {
     }
 
     // draw strings
-    for (let i = 1; i <= 6; i++) {
-      this.add_line(false, this.get_string_y(i), 'string');
+    const gauges = [.011, .014, .018, .028, .038, .049];
+    for (let i = 0; i < 6; i++) {
+      let str = this.add_line(false, this.get_string_y(i + 1), 'string');
+      this.add_attr(str, 'stroke-width', gauges[i] * 50);
     }
   }
 
@@ -37,7 +39,7 @@ class Fretboard {
       [pos, this.#y, 'V', this.#height] :
       [this.#x, pos, 'H', this.#width];
     params.unshift('M');
-    this.add_child(this.#svg, 'path', {
+    return this.add_child(this.#svg, 'path', {
       d: params.join(' '),
       class: cls
     });
@@ -53,17 +55,22 @@ class Fretboard {
     return this.#height / 7 * i;
   }
 
+  add_attr(element, name, value) {
+    const attr = document.createAttribute(name);
+    attr.value = value;
+    element.setAttributeNode(attr);
+  }
+
   add_child(parnt, child_name, attrs) {
     const child = document.createElementNS(
       'http://www.w3.org/2000/svg',
       child_name
     );
     for (let name in attrs) {
-      let attr = document.createAttribute(name);
-      attr.value = attrs[name];
-      child.setAttributeNode(attr);
+      this.add_attr(child, name, attrs[name]);
     }
     parnt.appendChild(child);
+    return child;
   }
 
   get_inlay_x(i) {
