@@ -1,3 +1,38 @@
+function addAttr(element, name, value) {
+  const attr = document.createAttribute(name);
+  attr.value = value;
+  element.setAttributeNode(attr);
+}
+
+function addChild(parnt, child_name, attrs, text) {
+  const child = document.createElement(child_name);
+  for (let name in attrs) {
+    addAttr(child, name, attrs[name]);
+  }
+  if (text !== undefined) {
+    child.appendChild(document.createTextNode(text));
+  }
+  parnt.appendChild(child);
+  return child;
+}
+
+function addText(parnt, text) {
+  parnt.appendChild(document.createTextNode(text));
+}
+
+class Notes {
+  static {
+    Notes.all = 'C C♯ D D♯ E F F♯ G G♯ A B♭ B'.split(' ');
+    Notes.natural = Notes.all.filter(str => str.length == 1);
+  }
+
+  static toId(label) {
+    return label.toLowerCase()
+      .replaceAll('♯', 'sharp')
+      .replaceAll('♭', 'flat');
+  }
+}
+
 class Fretboard {
   #svg;
   #width;
@@ -12,7 +47,7 @@ class Fretboard {
     this.#height = dimensions[3];
 
     const nut = this.addLine(true, this.#margin, 'nut');
-    this.addAttr(nut, 'stroke-width', 8);
+    addAttr(nut, 'stroke-width', 8);
 
     this.addInlays();
 
@@ -21,14 +56,14 @@ class Fretboard {
       let x = this.getFretX(i);
       //console.log(`Fret ${i} distance from nut ${Math.round(x)}`);
       let fret = this.addLine(true, x, 'fret');
-      this.addAttr(fret, 'stroke-width', 4);
+      addAttr(fret, 'stroke-width', 4);
     }
 
     // draw strings
     const gauges = [.011, .014, .018, .028, .038, .049];
     for (let i = 0; i < 6; i++) {
       let str = this.addLine(false, this.getStringY(i + 1), 'string');
-      this.addAttr(str, 'stroke-width', gauges[i] * 50);
+      addAttr(str, 'stroke-width', gauges[i] * 50);
     }
   }
 
@@ -37,7 +72,7 @@ class Fretboard {
       [pos, 0, 'V', this.#height] :
       [0, pos, 'H', this.#width];
     params.unshift('M');
-    return this.addChild(this.#svg, 'path', {
+    return this.addSvgChild(this.#svg, 'path', {
       d: params.join(' '),
       class: cls
     });
@@ -53,19 +88,13 @@ class Fretboard {
     return this.#height / 7 * i;
   }
 
-  addAttr(element, name, value) {
-    const attr = document.createAttribute(name);
-    attr.value = value;
-    element.setAttributeNode(attr);
-  }
-
-  addChild(parnt, child_name, attrs) {
+  addSvgChild(parnt, child_name, attrs) {
     const child = document.createElementNS(
       'http://www.w3.org/2000/svg',
       child_name
     );
     for (let name in attrs) {
-      this.addAttr(child, name, attrs[name]);
+      addAttr(child, name, attrs[name]);
     }
     parnt.appendChild(child);
     return child;
@@ -85,7 +114,7 @@ class Fretboard {
 
     for (let i of [3, 5, 7, 9]) {
       inlay_attrs.cx = this.getInlayX(i);
-      this.addChild(this.#svg, 'circle', inlay_attrs);
+      this.addSvgChild(this.#svg, 'circle', inlay_attrs);
     }
 
     // double inlay on 12th fret
@@ -93,12 +122,31 @@ class Fretboard {
     let inlay_y = this.#height * 5 / 14;
     for (let y of [inlay_y, this.#height - inlay_y]) {
       inlay_attrs.cy = y;
-      this.addChild(this.#svg, 'circle', inlay_attrs);
+      this.addSvgChild(this.#svg, 'circle', inlay_attrs);
     }
+  }
+}
+
+function addButtons() {
+  const radios = document.getElementById('note_radios');
+  for (let note of Notes.all) {
+    let id = Notes.toId(note);
+    addChild(radios, 'input', {
+      type: 'radio',
+      class: 'btn-check',
+      name: 'notes',
+      id: id,
+      autocomplete: 'off'
+    });
+    addChild(radios, 'label', {
+      class: 'btn btn-outline-primary',
+      for: id
+    }, note);
   }
 }
 
 window.addEventListener('load', function () {
   const svg = document.getElementById('fretboard');
   const f = new Fretboard(svg);
+  addButtons();
 }, false);
