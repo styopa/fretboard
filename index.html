@@ -3,7 +3,7 @@
   <head>
     <title>Fretboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="./node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="fretboard.css" />
   </head>
   <body>
@@ -12,9 +12,15 @@
       <svg id="fretboard" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 700 100" />
       <div class="container text-left">
         <div id="note_radios" class="my-3 btn-group" role="group"></div>
+        <div>
+          <label for="bpm">BPM</label>
+          <input type="number" id="bpm" min="1" max="200" value="80" />
+          <button aria-label="Play / Stop">
+          </button>
+        </div>
       </div>
     </div>
-    <script src="./js/bootstrap.bundle.min.js"></script>
+    <script src="./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="./fretboard.js"></script>
   </body>
 </html>
