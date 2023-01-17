@@ -1,4 +1,4 @@
-svg {
+svg#fretboard {
   background: #3f1a10;
 }
 
@@ -16,4 +16,8 @@ svg {
 
 .nut {
   stroke: #f5e4b9;
+}
+
+input#bpm {
+  width: 6em;
 }

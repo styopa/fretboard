@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "bootstrap": "~5.2",
-    "bootstrap-icons": "~1.10"
+    "bootstrap": "~5.2"
   }
 }
