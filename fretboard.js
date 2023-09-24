@@ -6,7 +6,7 @@ function addAttr(element, name, value) {
 
 function addChild(parnt, child_name, attrs, text) {
   const child = document.createElement(child_name);
-  for (let name in attrs) {
+  for (const name in attrs) {
     addAttr(child, name, attrs[name]);
   }
   if (text !== undefined) {
@@ -24,12 +24,29 @@ class Notes {
   static {
     Notes.all = 'C C♯ D D♯ E F F♯ G G♯ A B♭ B'.split(' ');
     Notes.natural = Notes.all.filter(str => str.length == 1);
+    Notes.id_prefix = 'note_radio_'
   }
 
-  static toId(label) {
-    return label.toLowerCase()
-      .replaceAll('♯', 'sharp')
-      .replaceAll('♭', 'flat');
+  static toId(name) {
+    return Notes.id_prefix + Notes.all.indexOf(name);
+  }
+
+  static fromId(id) {
+    return parseInt(id.replace(Notes.id_prefix, ''), 10);
+  }
+}
+
+class GuitarString {
+  gauge;
+  #note;
+
+  constructor(gauge, open_note) {
+    this.gauge = gauge;
+    this.#note = open_note;
+  }
+
+  fretFromNote(note) {
+    return (note - this.#note + 12) % 12;
   }
 }
 
@@ -40,7 +57,8 @@ class Fretboard {
   #margin;
   #fret_x;
   #string_y;
-  #mark;
+  #marks;
+  #strings;
 
   constructor(svg) {
     this.#svg = svg;
@@ -53,7 +71,7 @@ class Fretboard {
     this.#fret_x = []
     const width_12_frets = this.#width - this.#margin * 2;
     for (let i = 1; i < 13; i++) {
-      let nut_to_fret = width_12_frets * (2 - 1.059463 ** (12 - i));
+      const nut_to_fret = width_12_frets * (2 - 1.059463 ** (12 - i));
       this.#fret_x[i] = this.#margin + nut_to_fret;
     }
 
@@ -61,6 +79,21 @@ class Fretboard {
     for (let i = 0; i < 6; i++) {
       this.#string_y[i] = this.#height / 7 * (i + 1);
     }
+
+    this.#strings = [];
+    const six_string = [
+      [.011, 4],
+      [.014, 9],
+      [.018, 2],
+      [.028, 7],
+      [.038, 11],
+      [.049, 4]
+    ];
+    for (const args of six_string) {
+      this.#strings.push(new GuitarString(...args));
+    }
+
+    this.#marks = [];
   }
 
   draw() {
@@ -71,20 +104,20 @@ class Fretboard {
 
     // draw frets
     for (let i = 1; i < 13; i++) {
-      let x = this.#fret_x[i];
-      //console.log(`Fret ${i} distance from nut ${Math.round(x)}`);
-      let fret = this.addLine(true, x, 'fret');
+      const x = this.#fret_x[i];
+      const fret = this.addLine(true, x, 'fret');
       addAttr(fret, 'stroke-width', 4);
     }
 
     // draw strings
-    const gauges = [.011, .014, .018, .028, .038, .049];
-    for (let i = 0; i < gauges.length; i++) {
-      let str = this.addLine(false, this.#string_y[i], 'string');
-      addAttr(str, 'stroke-width', gauges[i] * 50);
+    let i = 0;
+    for (const string of this.#strings) {
+      let line = this.addLine(false, this.#string_y[i], 'string');
+      addAttr(line, 'stroke-width', string.gauge * 50);
+      let mark = this.addSvgChild(this.#svg, 'circle', {r: 8, class: 'mark', cy: this.#string_y[i]});
+      this.#marks.push(mark);
+      i++;
     }
-
-    this.#mark = this.addSvgChild(this.#svg, 'circle', {r: 8, class: 'mark'});
   }
 
   addLine(vertical, pos, cls) {
@@ -103,7 +136,7 @@ class Fretboard {
       'http://www.w3.org/2000/svg',
       child_name
     );
-    for (let name in attrs) {
+    for (const name in attrs) {
       addAttr(child, name, attrs[name]);
     }
     parnt.appendChild(child);
@@ -129,27 +162,35 @@ class Fretboard {
 
     // double inlay on 12th fret
     inlay_attrs.cx = this.getInlayX(12);
-    let inlay_y = this.#height * 5 / 14;
-    for (let y of [inlay_y, this.#height - inlay_y]) {
+    const inlay_y = this.#height * 5 / 14;
+    for (const y of [inlay_y, this.#height - inlay_y]) {
       inlay_attrs.cy = y;
       this.addSvgChild(this.#svg, 'circle', inlay_attrs);
     }
   }
 
-  mark(string, fret) {
-    //console.log('Positioning mark at ' + this.#fret_x[fret] + ', ' + this.#string_y[string]);
-    this.#mark.style.visibility = 'hidden';
-    this.#mark.setAttribute('cx', this.#fret_x[fret] - this.#mark.getAttribute('r'));
-    this.#mark.setAttribute('cy', this.#string_y[6 - string]);
-    this.#mark.style.visibility = 'visible';
+  mark(note) {
+    let i = 0;
+    for (let string of this.#strings) {
+      let fret = string.fretFromNote(note);
+      let mark = this.#marks[i++];
+      mark.style.visibility = 'hidden';
+      mark.setAttribute('cx', this.#fret_x[fret] - mark.getAttribute('r'));
+      mark.style.visibility = 'visible';
+    }
   }
+}
+
+function onNoteSelect(evt) {
+  console.log(Notes.fromId(evt.currentTarget.id));
+  fretboard.mark(5);
 }
 
 function addButtons() {
   const radios = document.getElementById('note_radios');
-  for (let note of Notes.all) {
-    let id = Notes.toId(note);
-    addChild(radios, 'input', {
+  for (const note of Notes.all) {
+    const id = Notes.toId(note);
+    const radio = addChild(radios, 'input', {
       type: 'radio',
       class: 'btn-check',
       name: 'notes',
@@ -160,6 +201,7 @@ function addButtons() {
       class: 'btn btn-outline-primary',
       for: id
     }, note);
+    radio.addEventListener('change', onNoteSelect);
   }
 }
 
