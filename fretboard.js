@@ -38,6 +38,7 @@ class Fretboard {
   #width;
   #height;
   #margin;
+  #fret_x;
 
   constructor(svg) {
     this.#svg = svg;
@@ -46,6 +47,16 @@ class Fretboard {
     this.#width = dimensions[2];
     this.#height = dimensions[3];
 
+    // precalculate positions
+    this.#fret_x = []
+    const width_12_frets = this.#width - this.#margin * 2;
+    for (let i = 1; i < 13; i++) {
+      let nut_to_fret = width_12_frets * (2 - 1.059463 ** (12 - i));
+      this.#fret_x[i] = this.#margin + nut_to_fret;
+    }
+  }
+
+  setUp() {
     const nut = this.addLine(true, this.#margin, 'nut');
     addAttr(nut, 'stroke-width', 8);
 
@@ -53,7 +64,7 @@ class Fretboard {
 
     // draw frets
     for (let i = 1; i < 13; i++) {
-      let x = this.getFretX(i);
+      let x = this.#fret_x[i];
       //console.log(`Fret ${i} distance from nut ${Math.round(x)}`);
       let fret = this.addLine(true, x, 'fret');
       addAttr(fret, 'stroke-width', 4);
@@ -78,12 +89,6 @@ class Fretboard {
     });
   }
 
-  getFretX(i) {
-    const len_12_frets = this.#width - this.#margin * 2;
-    const len_from_nut = len_12_frets * (2 - 1.059463 ** (12 - i));
-    return this.#margin + len_from_nut;
-  }
-
   getStringY(i) {
     return this.#height / 7 * i;
   }
@@ -101,7 +106,7 @@ class Fretboard {
   }
 
   getInlayX(i) {
-    return (this.getFretX(i) + this.getFretX(i - 1)) / 2;
+    return (this.#fret_x[i] + this.#fret_x[i - 1]) / 2;
   }
 
   addInlays() {
@@ -146,7 +151,8 @@ function addButtons() {
 }
 
 window.addEventListener('load', function () {
-  const svg = document.getElementById('fretboard');
-  const f = new Fretboard(svg);
+  fretboard.setUp();
   addButtons();
 }, false);
+
+fretboard = new Fretboard(document.getElementById('fretboard'));
