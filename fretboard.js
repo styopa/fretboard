@@ -20,27 +20,39 @@ function addText(parnt, text) {
   parnt.appendChild(document.createTextNode(text));
 }
 
-class Notes {
+class Note {
+  name;
+  index;
+
   static {
-    Notes.all = 'C C♯ D D♯ E F F♯ G G♯ A B♭ B'.split(' ');
-    Notes.natural = Notes.all.filter(str => str.length == 1);
-    Notes.id_prefix = 'note_radio_'
+    Note.names = 'C C♯ D D♯ E F F♯ G G♯ A B♭ B'.split(' ');
+    //Note.natural = Note.names.filter(str => str.length == 1);
+    Note.id_prefix = 'note_radio_'
   }
 
   static nameToId(name) {
-    return Notes.id_prefix + Notes.all.indexOf(name);
+    return Note.id_prefix + Note.names.indexOf(name);
   }
 
   static idToIndex(id) {
-    return parseInt(id.replace(Notes.id_prefix, ''), 10);
+    return parseInt(id.replace(Note.id_prefix, ''), 10);
   }
 
-  static indexToName(i) {
-    return Notes.all[i];
-  }
+  constructor(value) {
+    let i = undefined;
+    switch (typeof value) {
+      case 'number':
+        i = value;
+        break;
+      case 'string':
+        i = Note.names.indexOf(value.toUpperCase());
+        break;
+      default:
+        throw new TypeError(value);
+    }
 
-  static nameToIndex(s) {
-    return Notes.all.indexOf(s);
+    this.index = i;
+    this.name = Note.names[i];
   }
 }
 
@@ -49,14 +61,28 @@ class GuitarString {
   #open_note;
   name;
 
+  static* sixStringStandard() {
+    const six_string = [
+      [.011, 4],
+      [.014, 11],
+      [.018, 7],
+      [.028, 2],
+      [.038, 9],
+      [.049, 4]
+    ];
+    for (const args of six_string) {
+      yield new GuitarString(...args);
+    }
+  }
+
   constructor(gauge, open_note) {
     this.gauge = gauge;
-    this.#open_note = open_note;
-    this.name = Notes.indexToName(open_note);
+    this.#open_note = new Note(open_note);
+    this.name = this.#open_note.name;
   }
 
   fretFromNote(note) {
-    return 12 + (note - this.#open_note - 12) % 12;
+    return 12 + (note - this.#open_note.index - 12) % 12;
   }
 }
 
@@ -91,16 +117,8 @@ class Fretboard {
     }
 
     this.#strings = [];
-    const six_string = [
-      [.011, 4],
-      [.014, 11],
-      [.018, 7],
-      [.028, 2],
-      [.038, 9],
-      [.049, 4]
-    ];
-    for (const args of six_string) {
-      this.#strings.push(new GuitarString(...args));
+    for (const string of GuitarString.sixStringStandard()) {
+      this.#strings.push(string);
     }
 
     this.#marks = [];
@@ -181,8 +199,6 @@ class Fretboard {
 
   mark(note) {
     let i = 0;
-    //const name = Notes.indexToName(note);
-    //console.log(`Marking note ${name}`);
 
     for (let string of this.#strings) {
       let fret = string.fretFromNote(note);
@@ -196,14 +212,14 @@ class Fretboard {
 }
 
 function onNoteSelect(evt) {
-  const note = Notes.idToIndex(evt.currentTarget.id)
+  const note = Note.idToIndex(evt.currentTarget.id)
   fretboard.mark(note);
 }
 
 function addButtons() {
   const radios = document.getElementById('note_radios');
-  for (const note_name of Notes.all) {
-    const id = Notes.nameToId(note_name);
+  for (const note_name of Note.names) {
+    const id = Note.nameToId(note_name);
     const radio = addChild(radios, 'input', {
       type: 'radio',
       class: 'btn-check',
