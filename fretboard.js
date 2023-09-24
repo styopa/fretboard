@@ -27,26 +27,36 @@ class Notes {
     Notes.id_prefix = 'note_radio_'
   }
 
-  static toId(name) {
+  static nameToId(name) {
     return Notes.id_prefix + Notes.all.indexOf(name);
   }
 
-  static fromId(id) {
+  static idToIndex(id) {
     return parseInt(id.replace(Notes.id_prefix, ''), 10);
+  }
+
+  static indexToName(i) {
+    return Notes.all[i];
+  }
+
+  static nameToIndex(s) {
+    return Notes.all.indexOf(s);
   }
 }
 
 class GuitarString {
   gauge;
-  #note;
+  #open_note;
+  name;
 
   constructor(gauge, open_note) {
     this.gauge = gauge;
-    this.#note = open_note;
+    this.#open_note = open_note;
+    this.name = Notes.indexToName(open_note);
   }
 
   fretFromNote(note) {
-    return 12 + (note - this.#note - 12) % 12;
+    return 12 + (note - this.#open_note - 12) % 12;
   }
 }
 
@@ -171,8 +181,12 @@ class Fretboard {
 
   mark(note) {
     let i = 0;
+    //const name = Notes.indexToName(note);
+    //console.log(`Marking note ${name}`);
+
     for (let string of this.#strings) {
       let fret = string.fretFromNote(note);
+      //console.log(`String ${string.name} fret ${fret}`);
       let mark = this.#marks[i++];
       mark.style.visibility = 'hidden';
       mark.setAttribute('cx', this.#fret_x[fret] - mark.getAttribute('r'));
@@ -182,14 +196,14 @@ class Fretboard {
 }
 
 function onNoteSelect(evt) {
-  console.log(Notes.fromId(evt.currentTarget.id));
-  fretboard.mark(2);
+  const note = Notes.idToIndex(evt.currentTarget.id)
+  fretboard.mark(note);
 }
 
 function addButtons() {
   const radios = document.getElementById('note_radios');
-  for (const note of Notes.all) {
-    const id = Notes.toId(note);
+  for (const note_name of Notes.all) {
+    const id = Notes.nameToId(note_name);
     const radio = addChild(radios, 'input', {
       type: 'radio',
       class: 'btn-check',
@@ -200,7 +214,7 @@ function addButtons() {
     addChild(radios, 'label', {
       class: 'btn btn-outline-primary',
       for: id
-    }, note);
+    }, note_name);
     radio.addEventListener('change', onNoteSelect);
   }
 }
