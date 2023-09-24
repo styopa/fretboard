@@ -46,7 +46,7 @@ class GuitarString {
   }
 
   fretFromNote(note) {
-    return (note - this.#note + 12) % 12;
+    return 12 + (note - this.#note - 12) % 12;
   }
 }
 
@@ -83,10 +83,10 @@ class Fretboard {
     this.#strings = [];
     const six_string = [
       [.011, 4],
-      [.014, 9],
-      [.018, 2],
-      [.028, 7],
-      [.038, 11],
+      [.014, 11],
+      [.018, 7],
+      [.028, 2],
+      [.038, 9],
       [.049, 4]
     ];
     for (const args of six_string) {
@@ -183,7 +183,7 @@ class Fretboard {
 
 function onNoteSelect(evt) {
   console.log(Notes.fromId(evt.currentTarget.id));
-  fretboard.mark(5);
+  fretboard.mark(2);
 }
 
 function addButtons() {
