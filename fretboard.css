@@ -18,6 +18,11 @@ svg#fretboard {
   stroke: #f5e4b9;
 }
 
+.mark {
+  fill: red;
+  visibility: hidden;
+}
+
 input#bpm {
   width: 6em;
 }

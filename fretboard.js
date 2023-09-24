@@ -40,6 +40,7 @@ class Fretboard {
   #margin;
   #fret_x;
   #string_y;
+  #mark;
 
   constructor(svg) {
     this.#svg = svg;
@@ -82,6 +83,8 @@ class Fretboard {
       let str = this.addLine(false, this.#string_y[i], 'string');
       addAttr(str, 'stroke-width', gauges[i] * 50);
     }
+
+    this.#mark = this.addSvgChild(this.#svg, 'circle', {r: 8, class: 'mark'});
   }
 
   addLine(vertical, pos, cls) {
@@ -131,6 +134,14 @@ class Fretboard {
       inlay_attrs.cy = y;
       this.addSvgChild(this.#svg, 'circle', inlay_attrs);
     }
+  }
+
+  mark(string, fret) {
+    //console.log('Positioning mark at ' + this.#fret_x[fret] + ', ' + this.#string_y[string]);
+    this.#mark.style.visibility = 'hidden';
+    this.#mark.setAttribute('cx', this.#fret_x[fret] - this.#mark.getAttribute('r'));
+    this.#mark.setAttribute('cy', this.#string_y[6 - string]);
+    this.#mark.style.visibility = 'visible';
   }
 }
 
