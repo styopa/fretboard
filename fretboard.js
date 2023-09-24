@@ -39,6 +39,7 @@ class Fretboard {
   #height;
   #margin;
   #fret_x;
+  #string_y;
 
   constructor(svg) {
     this.#svg = svg;
@@ -54,9 +55,14 @@ class Fretboard {
       let nut_to_fret = width_12_frets * (2 - 1.059463 ** (12 - i));
       this.#fret_x[i] = this.#margin + nut_to_fret;
     }
+
+    this.#string_y = []
+    for (let i = 0; i < 6; i++) {
+      this.#string_y[i] = this.#height / 7 * (i + 1);
+    }
   }
 
-  setUp() {
+  draw() {
     const nut = this.addLine(true, this.#margin, 'nut');
     addAttr(nut, 'stroke-width', 8);
 
@@ -72,8 +78,8 @@ class Fretboard {
 
     // draw strings
     const gauges = [.011, .014, .018, .028, .038, .049];
-    for (let i = 0; i < 6; i++) {
-      let str = this.addLine(false, this.getStringY(i + 1), 'string');
+    for (let i = 0; i < gauges.length; i++) {
+      let str = this.addLine(false, this.#string_y[i], 'string');
       addAttr(str, 'stroke-width', gauges[i] * 50);
     }
   }
@@ -87,10 +93,6 @@ class Fretboard {
       d: params.join(' '),
       class: cls
     });
-  }
-
-  getStringY(i) {
-    return this.#height / 7 * i;
   }
 
   addSvgChild(parnt, child_name, attrs) {
@@ -151,7 +153,7 @@ function addButtons() {
 }
 
 window.addEventListener('load', function () {
-  fretboard.setUp();
+  fretboard.draw();
   addButtons();
 }, false);
 
