@@ -27,15 +27,16 @@ class Note {
   static {
     Note.names = 'C C♯ D D♯ E F F♯ G G♯ A B♭ B'.split(' ');
     //Note.natural = Note.names.filter(str => str.length == 1);
-    Note.id_prefix = 'note_radio_'
+  }
+
+  static* all() {
+    for (const name of Note.names) {
+      yield new Note(name);
+    }
   }
 
   static nameToId(name) {
     return Note.id_prefix + Note.names.indexOf(name);
-  }
-
-  static idToIndex(id) {
-    return parseInt(id.replace(Note.id_prefix, ''), 10);
   }
 
   constructor(value) {
@@ -82,7 +83,7 @@ class GuitarString {
   }
 
   fretFromNote(note) {
-    return 12 + (note - this.#open_note.index - 12) % 12;
+    return 12 + (note.index - this.#open_note.index - 12) % 12;
   }
 }
 
@@ -202,7 +203,6 @@ class Fretboard {
 
     for (let string of this.#strings) {
       let fret = string.fretFromNote(note);
-      //console.log(`String ${string.name} fret ${fret}`);
       let mark = this.#marks[i++];
       mark.style.visibility = 'hidden';
       mark.setAttribute('cx', this.#fret_x[fret] - mark.getAttribute('r'));
@@ -212,14 +212,15 @@ class Fretboard {
 }
 
 function onNoteSelect(evt) {
-  const note = Note.idToIndex(evt.currentTarget.id)
+  const digits = evt.currentTarget.id.match(/\d+/)[0];
+  const note = new Note(parseInt(digits, 10));
   fretboard.mark(note);
 }
 
 function addButtons() {
   const radios = document.getElementById('note_radios');
-  for (const note_name of Note.names) {
-    const id = Note.nameToId(note_name);
+  for (const note of Note.all()) {
+    const id = 'note_radio_' + note.index;
     const radio = addChild(radios, 'input', {
       type: 'radio',
       class: 'btn-check',
@@ -230,7 +231,7 @@ function addButtons() {
     addChild(radios, 'label', {
       class: 'btn btn-outline-primary',
       for: id
-    }, note_name);
+    }, note.name);
     radio.addEventListener('change', onNoteSelect);
   }
 }
