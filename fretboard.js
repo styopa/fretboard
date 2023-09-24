@@ -21,8 +21,8 @@ function addText(parnt, text) {
 }
 
 class Note {
-  name;
-  index;
+  #name;
+  #index;
 
   static {
     Note.names = 'C C♯ D D♯ E F F♯ G G♯ A B♭ B'.split(' ');
@@ -39,6 +39,15 @@ class Note {
     return Note.id_prefix + Note.names.indexOf(name);
   }
 
+  [Symbol.toPrimitive](hint) {
+    switch (hint) {
+      case 'number':
+        return this.#index;
+      default:
+        return this.#name;
+    }
+  }
+
   constructor(value) {
     let i = undefined;
     switch (typeof value) {
@@ -52,8 +61,8 @@ class Note {
         throw new TypeError(value);
     }
 
-    this.index = i;
-    this.name = Note.names[i];
+    this.#index = i;
+    this.#name = Note.names[i];
   }
 }
 
@@ -78,12 +87,13 @@ class GuitarString {
 
   constructor(gauge, open_note) {
     this.gauge = gauge;
-    this.#open_note = new Note(open_note);
-    this.name = this.#open_note.name;
+    const note = new Note(open_note);
+    this.#open_note = note
+    this.name = `${note}`;
   }
 
   fretFromNote(note) {
-    return 12 + (note.index - this.#open_note.index - 12) % 12;
+    return 12 + (note - this.#open_note - 12) % 12;
   }
 }
 
@@ -220,7 +230,7 @@ function onNoteSelect(evt) {
 function addButtons() {
   const radios = document.getElementById('note_radios');
   for (const note of Note.all()) {
-    const id = 'note_radio_' + note.index;
+    const id = `note_radio_${+note}`;
     const radio = addChild(radios, 'input', {
       type: 'radio',
       class: 'btn-check',
@@ -231,7 +241,7 @@ function addButtons() {
     addChild(radios, 'label', {
       class: 'btn btn-outline-primary',
       for: id
-    }, note.name);
+    }, note);
     radio.addEventListener('change', onNoteSelect);
   }
 }
