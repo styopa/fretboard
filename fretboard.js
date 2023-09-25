@@ -234,6 +234,7 @@ function onNoteSelect(evt) {
   const digits = evt.currentTarget.id.match(/\d+/)[0];
   const note = new Note(parseInt(digits, 10));
   fretboard.mark(note);
+  document.getElementById('play_btn').disabled = false;
 }
 
 function addButtons() {
