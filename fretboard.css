@@ -16,7 +16,7 @@
 }
 
 .mark {
-  fill: var(--bs-body-bg);
+  fill: var(--bs-light);
   visibility: hidden;
 }
 
