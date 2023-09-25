@@ -106,6 +106,7 @@ class Fretboard {
   #string_y;
   #marks;
   #strings;
+  #current_mark;
 
   constructor(svg) {
     this.#svg = svg;
@@ -131,6 +132,7 @@ class Fretboard {
     for (const string of GuitarString.sixStringStandard()) {
       this.#strings.push(string);
     }
+    this.#current_mark = 0;
 
     this.#marks = [];
   }
@@ -219,6 +221,13 @@ class Fretboard {
       mark.style.visibility = 'visible';
     }
   }
+
+  nextMark() {
+    this.#marks[this.#current_mark].classList.remove('hilite');
+    const max = this.#marks.length;
+    this.#current_mark = (--(this.#current_mark) % max + max) % max;
+    this.#marks[this.#current_mark].classList.add('hilite');
+  }
 }
 
 function onNoteSelect(evt) {
@@ -246,9 +255,25 @@ function addButtons() {
   }
 }
 
-window.addEventListener('load', function () {
+window.addEventListener('load', () => {
   fretboard.draw();
   addButtons();
 }, false);
 
-fretboard = new Fretboard(document.getElementById('fretboard'));
+const fretboard = new Fretboard(document.getElementById('fretboard'));
+const play_btn = document.getElementById('play_btn');
+let intervalId = undefined;
+play_btn.addEventListener('click', () => {
+  const bpm_spinner = document.getElementById('bpm');
+  bpm_spinner.disabled = !bpm_spinner.disabled;
+
+  if (intervalId === undefined) {
+    const delay = 60000 / parseInt(bpm_spinner.value, 10);
+    intervalId = setInterval(() => {
+      fretboard.nextMark();
+    }, delay);
+  } else {
+    clearInterval(intervalId);
+    intervalId = undefined;
+  }
+}, false);

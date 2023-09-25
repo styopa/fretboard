@@ -24,8 +24,7 @@ svg#fretboard {
 }
 
 .hilite {
-  fill: var(--bs-primary);
-  visibility: hidden;
+  fill: var(--bs-primary) !important;
 }
 
 input#bpm {
