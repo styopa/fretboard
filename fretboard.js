@@ -265,6 +265,7 @@ const fretboard = new Fretboard(document.getElementById('fretboard'));
 const play_btn = document.getElementById('play_btn');
 let intervalId = undefined;
 play_btn.addEventListener('click', () => {
+  document.getElementById('strike').textContent = 'Bootstrap';
   const bpm_spinner = document.getElementById('bpm');
   bpm_spinner.disabled = !bpm_spinner.disabled;
 
