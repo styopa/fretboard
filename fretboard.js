@@ -35,10 +35,6 @@ class Note {
     }
   }
 
-  static nameToId(name) {
-    return Note.id_prefix + Note.names.indexOf(name);
-  }
-
   [Symbol.toPrimitive](hint) {
     switch (hint) {
       case 'number':
