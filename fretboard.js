@@ -20,45 +20,42 @@ function addText(parnt, text) {
   parnt.appendChild(document.createTextNode(text));
 }
 
-class Note {
-  #name;
-  #index;
+class Notes {
+  all;
 
   static {
-    Note.names = 'C C♯ D D♯ E F F♯ G G♯ A B♭ B'.split(' ');
-    //Note.natural = Note.names.filter(str => str.length == 1);
+    Notes.symbols = 'C C♯ D D♯ E F F♯ G G♯ A B♭ B'.split(' ');
   }
 
-  static* all() {
-    for (const name of Note.names) {
-      yield new Note(name);
+  constructor() {
+    this.all = [];
+    for (let i = 0; i < Notes.symbols.length; i++) {
+      let note = new Note(Notes.symbols[i], i);
+      this.all.push(note);
     }
+  }
+
+  find(symbol) {
+    return this.all.find((note) => note.symbol == symbol.toUpperCase());
+  }
+}
+
+class Note {
+  symbol;
+  index;
+
+  constructor(symbol, i) {
+    this.symbol = symbol;
+    this.index = i;
   }
 
   [Symbol.toPrimitive](hint) {
     switch (hint) {
       case 'number':
-        return this.#index;
+        return this.index;
       default:
-        return this.#name;
+        return this.symbol;
     }
-  }
-
-  constructor(value) {
-    let i = undefined;
-    switch (typeof value) {
-      case 'number':
-        i = value;
-        break;
-      case 'string':
-        i = Note.names.indexOf(value.toUpperCase());
-        break;
-      default:
-        throw new TypeError(value);
-    }
-
-    this.#index = i;
-    this.#name = Note.names[i];
   }
 }
 
@@ -67,7 +64,7 @@ class GuitarString {
   #open_note;
   name;
 
-  static* sixStringStandard() {
+  static* sixStringStandard(notes) {
     const six_string = [
       [.011, 4],
       [.014, 11],
@@ -77,15 +74,14 @@ class GuitarString {
       [.049, 4]
     ];
     for (const args of six_string) {
-      yield new GuitarString(...args);
+      yield new GuitarString(args[0], notes.all[args[1]]);
     }
   }
 
   constructor(gauge, open_note) {
     this.gauge = gauge;
-    const note = new Note(open_note);
-    this.#open_note = note
-    this.name = `${note}`;
+    this.#open_note = open_note;
+    this.name = `${open_note.index}`;
   }
 
   fretFromNote(note) {
@@ -104,7 +100,7 @@ class Fretboard {
   #strings;
   #current_mark;
 
-  constructor(svg) {
+  constructor(svg, notes) {
     this.#svg = svg;
     const dimensions = svg.attributes['viewBox'].value.split(/\D+/);
     this.#margin = 20;
@@ -125,7 +121,7 @@ class Fretboard {
     }
 
     this.#strings = [];
-    for (const string of GuitarString.sixStringStandard()) {
+    for (const string of GuitarString.sixStringStandard(notes)) {
       this.#strings.push(string);
     }
     this.#current_mark = 0;
@@ -228,14 +224,14 @@ class Fretboard {
 
 function onNoteSelect(evt) {
   const digits = evt.currentTarget.id.match(/\d+/)[0];
-  const note = new Note(parseInt(digits, 10));
+  const note = notes.all[parseInt(digits, 10)];
   fretboard.mark(note);
   document.getElementById('play_btn').disabled = false;
 }
 
 function addButtons() {
   const radios = document.getElementById('note_radios');
-  for (const note of Note.all()) {
+  for (const note of notes.all) {
     const id = `note_radio_${+note}`;
     const radio = addChild(radios, 'input', {
       type: 'radio',
@@ -257,7 +253,11 @@ window.addEventListener('load', () => {
   addButtons();
 }, false);
 
-const fretboard = new Fretboard(document.getElementById('fretboard'));
+const notes = new Notes();
+const fretboard = new Fretboard(
+  document.getElementById('fretboard'),
+  notes
+);
 const play_btn = document.getElementById('play_btn');
 let intervalId = undefined;
 play_btn.addEventListener('click', () => {
