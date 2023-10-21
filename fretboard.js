@@ -98,6 +98,7 @@ class Fretboard {
   #string_y;
   #marks;
   #current_mark;
+  #mark_radius;
   strings;
 
   constructor(svg, strings) {
@@ -122,6 +123,10 @@ class Fretboard {
       this.#string_y[i] = this.#height / (this.strings.length + 1) * (i + 1);
     }
 
+    // same diameter as the distance between strings:
+    // two marks on adjacent strings won't overlap
+    this.#mark_radius = this.#string_y[0] * 0.5;
+
     this.#current_mark = 0;
     this.#marks = [];
   }
@@ -144,7 +149,12 @@ class Fretboard {
     for (const string of this.strings) {
       let line = this.addLine(false, this.#string_y[i], 'string');
       addAttr(line, 'stroke-width', string.gauge * 50);
-      let mark = this.addSvgChild(this.#svg, 'circle', {r: 8, class: 'mark', cy: this.#string_y[i]});
+      let svg_attrs = {
+        class: 'mark',
+        r: this.#mark_radius,
+        cy: this.#string_y[i]
+      };
+      let mark = this.addSvgChild(this.#svg, 'circle', svg_attrs);
       this.#marks.push(mark);
       i++;
     }
