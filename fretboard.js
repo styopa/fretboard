@@ -97,15 +97,17 @@ class Fretboard {
   #fret_x;
   #string_y;
   #marks;
-  #strings;
   #current_mark;
+  strings;
 
-  constructor(svg, notes) {
+  constructor(svg, strings) {
     this.#svg = svg;
     const dimensions = svg.attributes['viewBox'].value.split(/\D+/);
     this.#margin = 20;
     this.#width = dimensions[2];
     this.#height = dimensions[3];
+
+    this.strings = strings;
 
     // precalculate positions
     this.#fret_x = []
@@ -116,16 +118,11 @@ class Fretboard {
     }
 
     this.#string_y = []
-    for (let i = 0; i < 6; i++) {
-      this.#string_y[i] = this.#height / 7 * (i + 1);
+    for (let i = 0; i < this.strings.length; i++) {
+      this.#string_y[i] = this.#height / (this.strings.length + 1) * (i + 1);
     }
 
-    this.#strings = [];
-    for (const string of GuitarString.sixStringStandard(notes)) {
-      this.#strings.push(string);
-    }
     this.#current_mark = 0;
-
     this.#marks = [];
   }
 
@@ -144,7 +141,7 @@ class Fretboard {
 
     // draw strings
     let i = 0;
-    for (const string of this.#strings) {
+    for (const string of this.strings) {
       let line = this.addLine(false, this.#string_y[i], 'string');
       addAttr(line, 'stroke-width', string.gauge * 50);
       let mark = this.addSvgChild(this.#svg, 'circle', {r: 8, class: 'mark', cy: this.#string_y[i]});
@@ -205,7 +202,7 @@ class Fretboard {
   mark(note) {
     let i = 0;
 
-    for (let string of this.#strings) {
+    for (const string of this.strings) {
       let fret = string.fretFromNote(note);
       let mark = this.#marks[i++];
       mark.style.visibility = 'hidden';
@@ -256,7 +253,7 @@ window.addEventListener('load', () => {
 const notes = new Notes();
 const fretboard = new Fretboard(
   document.getElementById('fretboard'),
-  notes
+  Array.from(GuitarString.sixStringStandard(notes))
 );
 const play_btn = document.getElementById('play_btn');
 let intervalId = undefined;
