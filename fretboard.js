@@ -25,6 +25,7 @@ class Notes {
 
   static {
     Notes.symbols = 'C C♯ D D♯ E F F♯ G G♯ A B♭ B'.split(' ');
+    Notes.natural = Notes.symbols.filter((s) => s.length == 1);
   }
 
   constructor() {
@@ -33,6 +34,10 @@ class Notes {
       let note = new Note(Notes.symbols[i], i);
       this.all.push(note);
     }
+  }
+
+  nextNatural(note) {
+    return (Notes.natural.indexOf(note) + 1) % Notes.natural.length;
   }
 
   find(symbol) {
