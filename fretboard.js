@@ -175,7 +175,9 @@ class FretboardImage {
         r: this.#mark_radius,
         cy: this.#string_y[i]
       };
-      let mark = this.addSvgChild(this.#svg, 'circle', svg_attrs);
+      let mark = this.addSvgChild(this.#svg, 'g', {class: 'mark'});
+      let circle = this.addSvgChild(mark, 'circle', svg_attrs);
+      let text = this.addSvgChild(mark, 'text', {x: '50%', y: '50%'});
       this.#marks.push(mark);
       i++;
     }
