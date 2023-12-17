@@ -1,56 +1,4 @@
-import { Notes } from "./modules/note.mjs";
-
-function addAttr(element, name, value) {
-  const attr = document.createAttribute(name);
-  attr.value = value;
-  element.setAttributeNode(attr);
-}
-
-function addChild(parnt, child_name, attrs, text) {
-  const child = document.createElement(child_name);
-  for (const name in attrs) {
-    addAttr(child, name, attrs[name]);
-  }
-  if (text !== undefined) {
-    child.appendChild(document.createTextNode(text));
-  }
-  parnt.appendChild(child);
-  return child;
-}
-
-function addText(parnt, text) {
-  parnt.appendChild(document.createTextNode(text));
-}
-
-class GuitarString {
-  gauge;
-  open_note;
-  name;
-
-  static* sixStringStandard(notes) {
-    const six_string = [
-      [.011, 4],
-      [.014, 11],
-      [.018, 7],
-      [.028, 2],
-      [.038, 9],
-      [.049, 4]
-    ];
-    for (const args of six_string) {
-      yield new GuitarString(args[0], notes.all[args[1]]);
-    }
-  }
-
-  constructor(gauge, open_note) {
-    this.gauge = gauge;
-    this.open_note = open_note;
-    this.name = `${open_note.index}`;
-  }
-
-  fretFromNote(note) {
-    return 12 + (note - this.open_note - 12) % 12;
-  }
-}
+import { addAttr } from "./dom.mjs";
 
 class Fretboard {
   #strings;
@@ -61,14 +9,14 @@ class Fretboard {
     }
   }
 
-  * noteFrets(note) {
+  *noteFrets(note) {
     for (const string of this.#strings) {
       yield 12 + (note - string.open_note - 12) % 12;
     }
   }
 }
 
-class FretboardImage {
+export class FretboardImage {
   #svg;
   #width;
   #height;
@@ -90,14 +38,14 @@ class FretboardImage {
     this.#strings = strings;
 
     // precalculate positions
-    this.#fret_x = []
+    this.#fret_x = [];
     const width_12_frets = this.#width - this.#margin * 2;
     for (let i = 1; i < 13; i++) {
       const nut_to_fret = width_12_frets * (2 - 1.059463 ** (12 - i));
       this.#fret_x[i] = this.#margin + nut_to_fret;
     }
 
-    this.#string_y = []
+    this.#string_y = [];
     for (let i = 0; i < this.#strings.length; i++) {
       this.#string_y[i] = this.#height / (this.#strings.length + 1) * (i + 1);
     }
@@ -133,9 +81,9 @@ class FretboardImage {
         r: this.#mark_radius,
         cy: this.#string_y[i]
       };
-      let mark = this.addSvgChild(this.#svg, 'g', {class: 'mark'});
+      let mark = this.addSvgChild(this.#svg, 'g', { class: 'mark' });
       let circle = this.addSvgChild(mark, 'circle', svg_attrs);
-      let text = this.addSvgChild(mark, 'text', {x: '50%', y: '50%'});
+      let text = this.addSvgChild(mark, 'text', { x: '50%', y: '50%' });
       this.#marks.push(mark);
       i++;
     }
@@ -174,7 +122,7 @@ class FretboardImage {
       cy: this.#height / 2,
       r: 4,
       class: 'inlay'
-    }
+    };
 
     for (let i of [3, 5, 7, 9]) {
       inlay_attrs.cx = this.getInlayX(i);
@@ -209,57 +157,3 @@ class FretboardImage {
     this.#marks[this.#current_mark].classList.add('hilite');
   }
 }
-
-function onNoteSelect(evt) {
-  const digits = evt.currentTarget.id.match(/\d+/)[0];
-  const note = notes.all[parseInt(digits, 10)];
-  fretboard.mark(note);
-  document.getElementById('play_btn').disabled = false;
-}
-
-function addButtons() {
-  const radios = document.getElementById('note_radios');
-  for (const note of notes.all) {
-    const id = `note_radio_${+note}`;
-    const radio = addChild(radios, 'input', {
-      type: 'radio',
-      class: 'btn-check',
-      name: 'notes',
-      id: id,
-      autocomplete: 'off'
-    });
-    addChild(radios, 'label', {
-      class: 'btn btn-outline-primary',
-      for: id
-    }, note);
-    radio.addEventListener('change', onNoteSelect);
-  }
-}
-
-window.addEventListener('load', () => {
-  fretboard.draw();
-  addButtons();
-}, false);
-
-const notes = new Notes();
-const fretboard = new FretboardImage(
-  document.getElementById('fretboard'),
-  Array.from(GuitarString.sixStringStandard(notes))
-);
-const play_btn = document.getElementById('play_btn');
-let intervalId = undefined;
-play_btn.addEventListener('click', () => {
-  document.getElementById('strike').textContent = 'Bootstrap';
-  const bpm_spinner = document.getElementById('bpm');
-  bpm_spinner.disabled = !bpm_spinner.disabled;
-
-  if (intervalId === undefined) {
-    const delay = 60000 / parseInt(bpm_spinner.value, 10);
-    intervalId = setInterval(() => {
-      fretboard.nextMark();
-    }, delay);
-  } else {
-    clearInterval(intervalId);
-    intervalId = undefined;
-  }
-}, false);
