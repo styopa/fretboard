@@ -61,7 +61,7 @@ class Note {
 
 class GuitarString {
   gauge;
-  #open_note;
+  open_note;
   name;
 
   static* sixStringStandard(notes) {
@@ -80,16 +80,32 @@ class GuitarString {
 
   constructor(gauge, open_note) {
     this.gauge = gauge;
-    this.#open_note = open_note;
+    this.open_note = open_note;
     this.name = `${open_note.index}`;
   }
 
   fretFromNote(note) {
-    return 12 + (note - this.#open_note - 12) % 12;
+    return 12 + (note - this.open_note - 12) % 12;
   }
 }
 
 class Fretboard {
+  #strings;
+
+  constructor(strings) {
+    for (const string of strings) {
+      this.#strings.push(string);
+    }
+  }
+
+  * noteFrets(note) {
+    for (const string of this.#strings) {
+      yield 12 + (note - string.open_note - 12) % 12;
+    }
+  }
+}
+
+class FretboardImage {
   #svg;
   #width;
   #height;
@@ -99,7 +115,7 @@ class Fretboard {
   #marks;
   #current_mark;
   #mark_radius;
-  strings;
+  #strings;
 
   constructor(svg, strings) {
     this.#svg = svg;
@@ -108,7 +124,7 @@ class Fretboard {
     this.#width = dimensions[2];
     this.#height = dimensions[3];
 
-    this.strings = strings;
+    this.#strings = strings;
 
     // precalculate positions
     this.#fret_x = []
@@ -119,8 +135,8 @@ class Fretboard {
     }
 
     this.#string_y = []
-    for (let i = 0; i < this.strings.length; i++) {
-      this.#string_y[i] = this.#height / (this.strings.length + 1) * (i + 1);
+    for (let i = 0; i < this.#strings.length; i++) {
+      this.#string_y[i] = this.#height / (this.#strings.length + 1) * (i + 1);
     }
 
     // same diameter as the distance between strings:
@@ -138,15 +154,15 @@ class Fretboard {
     this.addInlays();
 
     // draw frets
-    for (let i = 1; i < 13; i++) {
-      const x = this.#fret_x[i];
-      const fret = this.addLine(true, x, 'fret');
-      addAttr(fret, 'stroke-width', 4);
+    for (let fret = 1; fret <= 12; fret++) {
+      const x = this.#fret_x[fret];
+      const fret_line = this.addLine(true, x, 'fret');
+      addAttr(fret_line, 'stroke-width', 4);
     }
 
     // draw strings
     let i = 0;
-    for (const string of this.strings) {
+    for (const string of this.#strings) {
       let line = this.addLine(false, this.#string_y[i], 'string');
       addAttr(line, 'stroke-width', string.gauge * 50);
       let svg_attrs = {
@@ -212,7 +228,7 @@ class Fretboard {
   mark(note) {
     let i = 0;
 
-    for (const string of this.strings) {
+    for (const string of this.#strings) {
       let fret = string.fretFromNote(note);
       let mark = this.#marks[i++];
       mark.style.visibility = 'hidden';
@@ -261,7 +277,7 @@ window.addEventListener('load', () => {
 }, false);
 
 const notes = new Notes();
-const fretboard = new Fretboard(
+const fretboard = new FretboardImage(
   document.getElementById('fretboard'),
   Array.from(GuitarString.sixStringStandard(notes))
 );
