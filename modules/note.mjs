@@ -1,35 +1,21 @@
-export class Notes {
-  all;
-
-  static {
-    Notes.symbols = 'C C♯ D D♯ E F F♯ G G♯ A B♭ B'.split(' ');
-    Notes.natural = Notes.symbols.filter((s) => s.length == 1);
-  }
-
-  constructor() {
-    this.all = [];
-    for (let i = 0; i < Notes.symbols.length; i++) {
-      let note = new Note(Notes.symbols[i], i);
-      this.all.push(note);
+class CyclicArray extends Array {
+  * since(elem, offset = 0) {
+    const start = this.indexOf(elem);
+    for (let i = 0; i < this.length; i++) {
+      yield this[(start + offset + i) % this.length];
     }
-  }
-
-  nextNatural(note) {
-    return (Notes.natural.indexOf(note) + 1) % Notes.natural.length;
-  }
-
-  find(symbol) {
-    return this.all.find((note) => note.symbol == symbol.toUpperCase());
   }
 }
 
 export class Note {
   symbol;
   index;
+  natural;
 
   constructor(symbol, i) {
     this.symbol = symbol;
     this.index = i;
+    this.natural = symbol.length == 1;
   }
 
   [Symbol.toPrimitive](hint) {
@@ -39,5 +25,22 @@ export class Note {
       default:
         return this.symbol;
     }
+  }
+}
+
+export class Notes {
+  all;
+
+  static {
+    Notes.symbols = 'C C♯ D D♯ E F F♯ G G♯ A B♭ B'.split(' ');
+    Notes.natural_notes = Notes.symbols.filter((s) => s.length == 1);
+  }
+
+  constructor() {
+    this.all = CyclicArray.from(Notes.symbols.map((s, i) => new Note(s, i)));
+  }
+
+  find(symbol) {
+    return this.all.find((note) => note.symbol == symbol.toUpperCase());
   }
 }

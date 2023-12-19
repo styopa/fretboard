@@ -1,4 +1,4 @@
-import { addChild } from "./modules/dom.mjs";
+import { addChild, addText, addAttr } from "./modules/dom.mjs";
 import { FretboardImage } from "./modules/fretboard.mjs";
 import { Notes } from "./modules/note.mjs";
 
