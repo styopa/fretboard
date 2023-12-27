@@ -8,6 +8,22 @@ class CyclicArray extends Array {
       yield this[(start + skip + i) % this.length];
     }
   }
+
+  randomElements(n) {
+    if (n > this.length) {
+      throw new RangeError(`Have ${this.length} elements, requested ${n}`);
+    }
+
+    const options = this.slice();
+    const result = [];
+    for (let i = 0; i < n; i++) {
+      let selection = Math.floor(Math.random() * options.length);
+      let element = options.splice(selection, 1)[0];
+      result.push(element);
+    }
+
+    return result;
+  }
 }
 
 export class Note {
@@ -39,14 +55,15 @@ export class Note {
 
 export class Notes {
   all;
+  natural;
 
   static {
     Notes.symbols = CyclicArray.from('C C♯ D D♯ E F F♯ G G♯ A B♭ B'.split(' '));
-    Notes.natural_notes = Notes.symbols.filter((s) => s.length == 1);
   }
 
   constructor() {
     this.all = CyclicArray.from(Notes.symbols.map((s, i) => new Note(s, i)));
+    this.natural = this.all.filter((note) => note.natural);
   }
 
   find(symbol) {
