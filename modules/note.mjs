@@ -1,8 +1,11 @@
 class CyclicArray extends Array {
-  * since(elem, offset = 0) {
+  * since(elem, skip = 0) {
     const start = this.indexOf(elem);
+    if (start === -1) {
+      throw new RangeError(`Element ${elem} not found`)
+    }
     for (let i = 0; i < this.length; i++) {
-      yield this[(start + offset + i) % this.length];
+      yield this[(start + skip + i) % this.length];
     }
   }
 }
@@ -16,6 +19,12 @@ export class Note {
     this.symbol = symbol;
     this.index = i;
     this.natural = symbol.length == 1;
+  }
+
+  toClassName() {
+    return this.symbol.toLowerCase()
+      .replace('♯', 'sharp')
+      .replace('♭', 'flat');
   }
 
   [Symbol.toPrimitive](hint) {
@@ -32,7 +41,7 @@ export class Notes {
   all;
 
   static {
-    Notes.symbols = 'C C♯ D D♯ E F F♯ G G♯ A B♭ B'.split(' ');
+    Notes.symbols = CyclicArray.from('C C♯ D D♯ E F F♯ G G♯ A B♭ B'.split(' '));
     Notes.natural_notes = Notes.symbols.filter((s) => s.length == 1);
   }
 
