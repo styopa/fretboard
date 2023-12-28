@@ -8,12 +8,6 @@ class Fretboard {
       this.#strings.push(string);
     }
   }
-
-  *noteFrets(note) {
-    for (const string of this.#strings) {
-      yield 12 + (note - string.open_note - 12) % 12;
-    }
-  }
 }
 
 export class FretboardImage {
@@ -110,12 +104,12 @@ export class FretboardImage {
     return child;
   }
 
-  getInlayX(i) {
-    return (this.#fret_x[i] + this.#fret_x[i - 1]) / 2;
-  }
-
   addInlays() {
-    const inlay_attrs = {
+    const getInlayX = (function (i) {
+      return (this.#fret_x[i] + this.#fret_x[i - 1]) / 2;
+    }).bind(this);
+
+    const attrs = {
       cx: undefined,
       cy: this.#height / 2,
       r: 4,
@@ -123,16 +117,16 @@ export class FretboardImage {
     };
 
     for (let i of [3, 5, 7, 9]) {
-      inlay_attrs.cx = this.getInlayX(i);
-      this.addSvgChild(this.#svg, 'circle', inlay_attrs);
+      attrs.cx = getInlayX(i);
+      this.addSvgChild(this.#svg, 'circle', attrs);
     }
 
     // double inlay on 12th fret
-    inlay_attrs.cx = this.getInlayX(12);
+    attrs.cx = getInlayX(12);
     const inlay_y = this.#height * 5 / 14;
     for (const y of [inlay_y, this.#height - inlay_y]) {
-      inlay_attrs.cy = y;
-      this.addSvgChild(this.#svg, 'circle', inlay_attrs);
+      attrs.cy = y;
+      this.addSvgChild(this.#svg, 'circle', attrs);
     }
   }
 
