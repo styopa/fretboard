@@ -53,23 +53,31 @@ export class FretboardImage {
   }
 
   draw() {
-    const nut = this.addLine(this.#margin, 0, 'nut');
-    addAttr(nut, 'stroke-width', 8);
+    const addLine = (function (x, y, stroke_width, css_class) {
+        const orientation = x === 0 ? 'H' : 'V';
+        const length = x === 0 ? this.#width : this.#height;
+        return this.addSvgChild(this.#svg, 'path', {
+          d: `M ${x} ${y} ${orientation} ${length}`,
+          "stroke-width": stroke_width,
+          class: css_class
+        });
+      }
+    ).bind(this);
+
+    addLine(this.#margin, 0, 8, 'nut');
 
     this.addInlays();
 
     // draw frets
     for (let fret = 1; fret <= 12; fret++) {
       const x = this.#fret_x[fret];
-      const fret_line = this.addLine(x, 0, 'fret');
-      addAttr(fret_line, 'stroke-width', 4);
+      addLine(x, 0, 4, 'fret');
     }
 
     // draw strings
     let i = 0;
     for (const string of this.#strings) {
-      let line = this.addLine(0, this.#string_y[i], 'string');
-      addAttr(line, 'stroke-width', string.gauge * 50);
+      addLine(0, this.#string_y[i], string.gauge * 50, 'string');
       let svg_attrs = {
         class: 'mark',
         r: this.#mark_radius,
@@ -81,15 +89,6 @@ export class FretboardImage {
       this.#marks.push(mark);
       i++;
     }
-  }
-
-  addLine(x, y, cls) {
-    const orientation = x === 0 ? 'H' : 'V';
-    const length = x === 0 ? this.#width : this.#height;
-    return this.addSvgChild(this.#svg, 'path', {
-      d: `M ${x} ${y} ${orientation} ${length}`,
-      class: cls
-    });
   }
 
   addSvgChild(parnt, child_name, attrs) {
