@@ -1,12 +1,80 @@
 import { addAttr } from "./dom.mjs";
 
-class Fretboard {
-  #strings;
+class CustomSvgElement {
+  static svg_ns = 'http://www.w3.org/2000/svg';
 
-  constructor(strings) {
-    for (const string of strings) {
-      this.#strings.push(string);
+  element;
+
+  static createElement(name, attributes) {
+    const element = document.createElementNS(this.constructor.svg_ns, name);
+    for (const name in attributes) {
+      let attr = document.createAttribute(name);
+      attr.value = attributes[name];
+      element.setAttributeNode(attr);
     }
+    return element;
+  }
+
+  constructor(name, attributes) {
+    this.element = this.constructor.createElement(name, attributes);
+  }
+
+  appendTo(parent) {
+    parent.element.appendChild(this.element);
+    return self;
+  }
+}
+
+class Marker extends CustomSvgElement {
+  circle;
+  text;
+  #css_class;
+
+  constructor() {
+    super('g', {class: 'mark'});
+    this.circle = this.constructor.createElement('circle').appendTo(self);
+    this.text = this.constructor.createElement('text').appendTo(self);
+  }
+
+  select(text = '', css_class = undefined) {
+    this.text.innerText = text;
+    if (css_class !== undefined) {
+      this.#css_class = css_class;
+      this.element.classList.add(css_class);
+    }
+    this.element.style.visibility = 'visible';
+  }
+
+  unselect() {
+    this.element.style.visibility = 'hidden';
+    if (this.#css_class !== undefined) {
+      this.element.classList.remove(this.#css_class);
+    }
+  }
+
+  toggleHighlight() {
+    this.element.classList.toggle('highlight');
+  }
+}
+
+class MarkerGroup {
+  #markers;
+  #selection;
+
+  constructor(n_strings, n_frets) {
+    this.#markers = [];
+    for (let i = 0; i < n_strings; i++) {
+      this.#markers[i] = new Array(n_frets);
+    }
+  }
+
+  addMarker(string, fret, marker) {
+    this.#markers[string][fret] = marker;
+  }
+
+  clearSelection() {
+    this.#selection.map((marker) => marker.unselect());
+    this.#selection.length = 0;
   }
 }
 
@@ -19,7 +87,6 @@ export class FretboardImage {
   #string_y;
   #marks;
   #current_mark;
-  #mark_radius;
   #strings;
 
   constructor(svg, strings) {
@@ -44,50 +111,46 @@ export class FretboardImage {
       this.#string_y[i] = this.#height / (this.#strings.length + 1) * (i + 1);
     }
 
-    // same diameter as the distance between strings:
-    // two marks on adjacent strings won't overlap
-    this.#mark_radius = this.#string_y[0] * 0.5;
-
     this.#current_mark = 0;
     this.#marks = [];
   }
 
   draw() {
     const addLine = (function (x, y, stroke_width, css_class) {
-        const orientation = x === 0 ? 'H' : 'V';
-        const length = x === 0 ? this.#width : this.#height;
-        return this.addSvgChild(this.#svg, 'path', {
-          d: `M ${x} ${y} ${orientation} ${length}`,
-          "stroke-width": stroke_width,
-          class: css_class
-        });
-      }
-    ).bind(this);
+      const orientation = x === 0 ? 'H' : 'V';
+      const length = x === 0 ? this.#width : this.#height;
+      return this.addSvgChild(this.#svg, 'path', {
+        d: `M ${x} ${y} ${orientation} ${length}`,
+        "stroke-width": stroke_width,
+        class: css_class
+      });
+    }).bind(this);
+
+    const addMarker = (function (string, fret) {
+      let svg_attrs = {
+        class: 'mark',
+        r: this.#string_y[0] * 0.45,
+        cx: this.#fret_x[fret],
+        cy: this.#string_y[string]
+      };
+      let mark = this.addSvgChild(this.#svg, 'g', { class: 'mark' });
+      let circle = this.addSvgChild(mark, 'circle', svg_attrs);
+      let text = this.addSvgChild(mark, 'text', { x: '50%', y: '50%' });
+      this.#marks.push(mark);
+    }).bind(this);
 
     addLine(this.#margin, 0, 8, 'nut');
 
     this.addInlays();
 
     // draw frets
-    for (let fret = 1; fret <= 12; fret++) {
-      const x = this.#fret_x[fret];
-      addLine(x, 0, 4, 'fret');
+    for (let i = 1; i <= 12; i++) {
+      addLine(this.#fret_x[i], 0, 4, 'fret');
     }
 
     // draw strings
-    let i = 0;
-    for (const string of this.#strings) {
-      addLine(0, this.#string_y[i], string.gauge * 50, 'string');
-      let svg_attrs = {
-        class: 'mark',
-        r: this.#mark_radius,
-        cy: this.#string_y[i]
-      };
-      let mark = this.addSvgChild(this.#svg, 'g', { class: 'mark' });
-      let circle = this.addSvgChild(mark, 'circle', svg_attrs);
-      let text = this.addSvgChild(mark, 'text', { x: '50%', y: '50%' });
-      this.#marks.push(mark);
-      i++;
+    for (let i = 0; i < this.#strings.length; i++) {
+      addLine(0, this.#string_y[i], this.#strings[i].gauge * 50, 'string');
     }
   }
 
