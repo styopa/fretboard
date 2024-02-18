@@ -2,36 +2,6 @@ import { addChild, addText, addAttr } from "./modules/dom.mjs";
 import { FretboardImage } from "./modules/fretboard.mjs";
 import { Notes } from "./modules/note.mjs";
 
-class GuitarString {
-  gauge;
-  open_note;
-  name;
-
-  static* sixStringStandard(notes) {
-    const six_string = [
-      [.011, 4],
-      [.014, 11],
-      [.018, 7],
-      [.028, 2],
-      [.038, 9],
-      [.049, 4]
-    ];
-    for (const args of six_string) {
-      yield new GuitarString(args[0], notes.all[args[1]]);
-    }
-  }
-
-  constructor(gauge, open_note) {
-    this.gauge = gauge;
-    this.open_note = open_note;
-    this.name = `${open_note.index}`;
-  }
-
-  fretFromNote(note) {
-    return 12 + (note - this.open_note - 12) % 12;
-  }
-}
-
 function onNoteSelect(evt) {
   const digits = evt.currentTarget.id.match(/\d+/)[0];
   const note = notes.all[parseInt(digits, 10)];
@@ -59,15 +29,12 @@ function addButtons() {
 }
 
 window.addEventListener('load', () => {
-  fretboard.draw();
   addButtons();
 }, false);
 
 const notes = new Notes();
-const fretboard = new FretboardImage(
-  document.getElementById('fretboard'),
-  Array.from(GuitarString.sixStringStandard(notes))
-);
+const svg = document.getElementById('fretboard');
+const fretboard = new FretboardImage(svg, notes);
 const play_btn = document.getElementById('play_btn');
 let intervalId = undefined;
 play_btn.addEventListener('click', () => {

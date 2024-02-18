@@ -1,9 +1,17 @@
 .fret, .nut, .inlay {
-  opacity: 15%;
+  opacity: 95%;
 }
 
 .fret, .nut, .string {
   stroke: var(--bs-secondary);
+}
+
+.fret {
+  stroke-width: 4;
+}
+
+.nut {
+  stroke-width: 8;
 }
 
 .inlay {
@@ -18,6 +26,7 @@
 .mark {
   fill: var(--bs-light);
   visibility: hidden;
+  visibility: visible !important;
 }
 
 .hilite {

@@ -21,7 +21,7 @@ class CustomSvgElement {
 
   appendTo(parent) {
     parent.element.appendChild(this.element);
-    return self;
+    return this;
   }
 }
 
@@ -30,10 +30,15 @@ class Marker extends CustomSvgElement {
   text;
   #css_class;
 
-  constructor() {
+  static all = [];
+  static selected = [];
+  static n_frets = undefined;
+  static n_strings = undefined;
+
+  constructor(attrs) {
     super('g', {class: 'mark'});
-    this.circle = this.constructor.createElement('circle').appendTo(self);
-    this.text = this.constructor.createElement('text').appendTo(self);
+    this.circle = this.constructor.createElement('circle', attrs).appendTo(this);
+    this.text = this.constructor.createElement('text').appendTo(this);
   }
 
   select(text = '', css_class = undefined) {
@@ -55,159 +60,122 @@ class Marker extends CustomSvgElement {
   toggleHighlight() {
     this.element.classList.toggle('highlight');
   }
+
+  clearSelection() {
+    this.constructor.selected.map((marker) => marker.unselect());
+    this.constructor.selected.length = 0;
+  }
 }
 
-class MarkerGroup {
-  #markers;
-  #selection;
+class Group extends CustomSvgElement {
+  constructor(attrs = undefined) {
+    super('g', attrs);
+  }
+}
 
-  constructor(n_strings, n_frets) {
-    this.#markers = [];
-    for (let i = 0; i < n_strings; i++) {
-      this.#markers[i] = new Array(n_frets);
+class VerticalLine extends CustomSvgElement {
+  static height = undefined;
+  x;
+
+  constructor(x, css_class) {
+    super('path', {d: `M ${x} 0 V ${VerticalLine.height}`, class: css_class, 'stroke-width': 8});
+    this.x = x;
+  }
+}
+
+class GuitarString extends Group {
+  notes;
+
+  static *sixStringStandard(fretboard, notes) {
+    const tuning = [
+      [.011, 'e'],
+      [.014, 'B'],
+      [.018, 'G'],
+      [.028, 'D'],
+      [.038, 'A'],
+      [.049, 'E']
+    ];
+    let box_height = fretboard.height / (tuning.length + 1);
+    for (let i = 0; i < tuning.length; i++) {
+      let open_note = notes.find(tuning[i][1]);
+      let string_notes = notes.all.since(open_note);
+      let y = box_height * (i + 1);
+      yield new GuitarString(y, fretboard, box_height, tuning[i][0], string_notes);
     }
   }
 
-  addMarker(string, fret, marker) {
-    this.#markers[string][fret] = marker;
+  constructor(y, fretboard, box_height, gauge, notes) {
+    super({class: 'string'});
+    this.notes = Array.from(notes);
+    const path_attrs = {
+      d: `M 0 ${y} H ${fretboard.width}`,
+      'stroke-width': 50 * gauge
+    };
+    (new CustomSvgElement('path', path_attrs)).appendTo(this);
+    let i = 0;
+    for (const note of notes) {
+      let group = new Group();
+      group.appendTo(this);
+      const circle_attrs = {
+        cx: fretboard.frets[i++].x,
+        cy: y,
+        r: box_height * 0.49
+      }
+      (new Marker(circle_attrs)).appendTo(this);
+    }
   }
+}
 
-  clearSelection() {
-    this.#selection.map((marker) => marker.unselect());
-    this.#selection.length = 0;
+class Inlay extends CustomSvgElement {
+  static #radius = 4;
+
+  constructor(x, y) {
+    const attrs = {
+      cx: x,
+      cy: y,
+      r: Inlay.#radius,
+      class: 'inlay'
+    };
+    super('circle', attrs);
   }
 }
 
 export class FretboardImage {
-  #svg;
-  #width;
-  #height;
+  width;
+  height;
   #margin;
-  #fret_x;
-  #string_y;
-  #marks;
-  #current_mark;
-  #strings;
+  frets;
+  #notes;
 
-  constructor(svg, strings) {
-    this.#svg = svg;
-    const dimensions = svg.attributes['viewBox'].value.split(/\D+/);
+  constructor(svg, notes) {
+    const width = 700;
+    const height = 150;
+    this.element = svg;
     this.#margin = 20;
-    this.#width = dimensions[2];
-    this.#height = dimensions[3];
+    this.width = width;
+    this.height = height;
+    this.#notes = notes;
+    this.frets = [];
 
-    this.#strings = strings;
-
-    // precalculate positions
-    this.#fret_x = [];
-    const width_12_frets = this.#width - this.#margin * 2;
-    for (let i = 1; i < 13; i++) {
-      const nut_to_fret = width_12_frets * (2 - 1.059463 ** (12 - i));
-      this.#fret_x[i] = this.#margin + nut_to_fret;
-    }
-
-    this.#string_y = [];
-    for (let i = 0; i < this.#strings.length; i++) {
-      this.#string_y[i] = this.#height / (this.#strings.length + 1) * (i + 1);
-    }
-
-    this.#current_mark = 0;
-    this.#marks = [];
-  }
-
-  draw() {
-    const addLine = (function (x, y, stroke_width, css_class) {
-      const orientation = x === 0 ? 'H' : 'V';
-      const length = x === 0 ? this.#width : this.#height;
-      return this.addSvgChild(this.#svg, 'path', {
-        d: `M ${x} ${y} ${orientation} ${length}`,
-        "stroke-width": stroke_width,
-        class: css_class
-      });
-    }).bind(this);
-
-    const addMarker = (function (string, fret) {
-      let svg_attrs = {
-        class: 'mark',
-        r: this.#string_y[0] * 0.45,
-        cx: this.#fret_x[fret],
-        cy: this.#string_y[string]
-      };
-      let mark = this.addSvgChild(this.#svg, 'g', { class: 'mark' });
-      let circle = this.addSvgChild(mark, 'circle', svg_attrs);
-      let text = this.addSvgChild(mark, 'text', { x: '50%', y: '50%' });
-      this.#marks.push(mark);
-    }).bind(this);
-
-    addLine(this.#margin, 0, 8, 'nut');
-
-    this.addInlays();
+    VerticalLine.height = this.height;
+    (new VerticalLine(this.#margin, 'nut')).appendTo(this);
 
     // draw frets
-    for (let i = 1; i <= 12; i++) {
-      addLine(this.#fret_x[i], 0, 4, 'fret');
+    const fret_count = 12;
+    for (let i = 0; i < fret_count; i++) {
+      let x = this.#margin + (this.width - this.#margin) * (2 - 1.059463 ** (fret_count - i - 1));
+      let fret = new VerticalLine(x, 'fret');
+      fret.appendTo(this);
+      this.frets.push(fret);
     }
 
-    // draw strings
-    for (let i = 0; i < this.#strings.length; i++) {
-      addLine(0, this.#string_y[i], this.#strings[i].gauge * 50, 'string');
-    }
-  }
-
-  addSvgChild(parnt, child_name, attrs) {
-    const child = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      child_name
-    );
-    for (const name in attrs) {
-      addAttr(child, name, attrs[name]);
-    }
-    parnt.appendChild(child);
-    return child;
-  }
-
-  addInlays() {
-    const getInlayX = (function (i) {
-      return (this.#fret_x[i] + this.#fret_x[i - 1]) / 2;
-    }).bind(this);
-
-    const attrs = {
-      cx: undefined,
-      cy: this.#height / 2,
-      r: 4,
-      class: 'inlay'
-    };
-
-    for (let i of [3, 5, 7, 9]) {
-      attrs.cx = getInlayX(i);
-      this.addSvgChild(this.#svg, 'circle', attrs);
+    for (const i of [3, 5, 7, 9, 12]) {
+      let x = (this.frets[i - 2].x + this.frets[i - 1].x) / 2;
+      (new Inlay(x, this.height / 2)).appendTo(this);
     }
 
-    // double inlay on 12th fret
-    attrs.cx = getInlayX(12);
-    const inlay_y = this.#height * 5 / 14;
-    for (const y of [inlay_y, this.#height - inlay_y]) {
-      attrs.cy = y;
-      this.addSvgChild(this.#svg, 'circle', attrs);
+    for (const str of GuitarString.sixStringStandard(this, this.#notes)) {
+      str.appendTo(this);
     }
-  }
-
-  mark(note) {
-    let i = 0;
-
-    for (const string of this.#strings) {
-      let fret = string.fretFromNote(note);
-      let mark = this.#marks[i++];
-      mark.style.visibility = 'hidden';
-      mark.setAttribute('cx', this.#fret_x[fret] - mark.getAttribute('r'));
-      mark.style.visibility = 'visible';
-    }
-  }
-
-  nextMark() {
-    this.#marks[this.#current_mark].classList.remove('hilite');
-    const max = this.#marks.length;
-    this.#current_mark = (--(this.#current_mark) % max + max) % max;
-    this.#marks[this.#current_mark].classList.add('hilite');
   }
 }
