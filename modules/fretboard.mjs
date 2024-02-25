@@ -1,12 +1,55 @@
 import { addAttr } from "./dom.mjs";
 
+class SvgContainer {
+  static namespace = 'http://www.w3.org/2000/svg';
+
+  element;
+
+  constructor(name) {
+    this.element = document.createElementNS(this.constructor.namespace, name);
+  }
+
+  setAttributes(attributes) {
+    for (const name in attributes) {
+      let attr = document.createAttribute(name);
+      attr.value = attributes[name];
+      this.element.setAttributeNode(attr);
+    }
+  }
+
+  appendChild(custom_element) {
+    this.element.appendChild(custom_element.element)
+  }
+}
+
+class VerticalLine extends SvgContainer {
+  constructor(x, height, css_class) {
+    super('path');
+    this.setAttributes({
+      d: `M ${x} 0 V ${height}`,
+      class: css_class
+    });
+  }
+}
+
+class HorizontalLine extends SvgContainer {
+  constructor(y, length, stroke, css_class) {
+    super('path');
+    this.setAttributes({
+      d: `M 0 ${y} H ${length}`,
+      'stroke-width': stroke,
+      class: css_class
+    });
+  }
+}
+
 class CustomSvgElement {
-  static svg_ns = 'http://www.w3.org/2000/svg';
+  static namespace = 'http://www.w3.org/2000/svg';
 
   element;
 
   static createElement(name, attributes) {
-    const element = document.createElementNS(this.constructor.svg_ns, name);
+    const element = document.createElementNS(this.constructor.namespace, name);
     for (const name in attributes) {
       let attr = document.createAttribute(name);
       attr.value = attributes[name];
@@ -25,20 +68,55 @@ class CustomSvgElement {
   }
 }
 
-class Marker extends CustomSvgElement {
+class Group extends SvgContainer {
+  constructor() {
+    super('g');
+  }
+}
+
+class MarkerGroup extends Group {
+  markers = [];
+
+  constructor(fret_positions, string_positions, selections) {
+    super();
+    // measure distance between strings, not between first string and edge
+    const diameter = string_positions[1] - string_positions[0];
+    for (let i = 0; i < selections.length; i++) {
+      const y = string_positions[i] - diameter / 2;
+      //console.log(`String ${i}: y = ${y}`)
+      for (const pos of selections[i]) {
+        const x = fret_positions[pos] - diameter;
+        //console.log(x, y, diameter);
+        const marker = new Marker(x, y, diameter);
+        this.markers.push(marker);
+        this.appendChild(marker);
+      }
+    }
+  }
+
+  clearSelection() {
+    this.markers.map((marker) => marker.unselect());
+  }
+}
+
+class Marker extends Group {
   circle;
   text;
   #css_class;
 
-  static all = [];
-  static selected = [];
-  static n_frets = undefined;
-  static n_strings = undefined;
-
-  constructor(attrs) {
-    super('g', {class: 'mark'});
-    this.circle = this.constructor.createElement('circle', attrs).appendTo(this);
-    this.text = this.constructor.createElement('text').appendTo(this);
+  constructor(x, y, diameter) {
+    super('g');
+    this.setAttributes({
+      class: 'marker',
+    });
+    this.circle = new SvgContainer('circle');
+    this.circle.setAttributes({
+      cx: x + diameter / 2,
+      cy: y + diameter / 2,
+      r: diameter / 2 * 0.9,
+    });
+    this.appendChild(this.circle);
+    //this.text = this.constructor.createElement('text').appendTo(this);
   }
 
   select(text = '', css_class = undefined) {
@@ -60,122 +138,77 @@ class Marker extends CustomSvgElement {
   toggleHighlight() {
     this.element.classList.toggle('highlight');
   }
-
-  clearSelection() {
-    this.constructor.selected.map((marker) => marker.unselect());
-    this.constructor.selected.length = 0;
-  }
 }
 
-class Group extends CustomSvgElement {
-  constructor(attrs = undefined) {
-    super('g', attrs);
-  }
-}
-
-class VerticalLine extends CustomSvgElement {
-  static height = undefined;
-  x;
-
-  constructor(x, css_class) {
-    super('path', {d: `M ${x} 0 V ${VerticalLine.height}`, class: css_class, 'stroke-width': 8});
-    this.x = x;
-  }
-}
-
-class GuitarString extends Group {
-  notes;
-
-  static *sixStringStandard(fretboard, notes) {
-    const tuning = [
-      [.011, 'e'],
-      [.014, 'B'],
-      [.018, 'G'],
-      [.028, 'D'],
-      [.038, 'A'],
-      [.049, 'E']
-    ];
-    let box_height = fretboard.height / (tuning.length + 1);
-    for (let i = 0; i < tuning.length; i++) {
-      let open_note = notes.find(tuning[i][1]);
-      let string_notes = notes.all.since(open_note);
-      let y = box_height * (i + 1);
-      yield new GuitarString(y, fretboard, box_height, tuning[i][0], string_notes);
-    }
-  }
-
-  constructor(y, fretboard, box_height, gauge, notes) {
-    super({class: 'string'});
-    this.notes = Array.from(notes);
-    const path_attrs = {
-      d: `M 0 ${y} H ${fretboard.width}`,
-      'stroke-width': 50 * gauge
-    };
-    (new CustomSvgElement('path', path_attrs)).appendTo(this);
-    let i = 0;
-    for (const note of notes) {
-      let group = new Group();
-      group.appendTo(this);
-      const circle_attrs = {
-        cx: fretboard.frets[i++].x,
-        cy: y,
-        r: box_height * 0.49
-      }
-      (new Marker(circle_attrs)).appendTo(this);
-    }
-  }
-}
-
-class Inlay extends CustomSvgElement {
-  static #radius = 4;
-
-  constructor(x, y) {
-    const attrs = {
+class Inlay extends SvgContainer {
+  constructor(x, y, r) {
+    super('circle');
+    this.setAttributes({
       cx: x,
       cy: y,
-      r: Inlay.#radius,
+      r: r,
       class: 'inlay'
-    };
-    super('circle', attrs);
+    });
   }
 }
 
-export class FretboardImage {
-  width;
-  height;
-  #margin;
-  frets;
+export class FretboardImage extends SvgContainer {
+  static width = 1400;
+  static height = 200;
+  static margin_x = 20;
+  static num_frets = 12;
   #notes;
+  fret_positions = [];
+  string_positions = [];
 
-  constructor(svg, notes) {
-    const width = 700;
-    const height = 150;
-    this.element = svg;
-    this.#margin = 20;
-    this.width = width;
-    this.height = height;
+  constructor(notes) {
+    super('svg');
+    this.setAttributes({
+      viewBox: [
+        0,
+        0,
+        this.constructor.width,
+        this.constructor.height,
+      ].join(' '),
+      width: this.constructor.width,
+      height: this.constructor.height,
+      class: 'fretboard',
+      xmlns: this.constructor.namespace
+    })
     this.#notes = notes;
-    this.frets = [];
 
-    VerticalLine.height = this.height;
-    (new VerticalLine(this.#margin, 'nut')).appendTo(this);
+    const nut = new VerticalLine(this.constructor.margin_x, this.constructor.height, 'nut');
+    this.appendChild(nut);
 
-    // draw frets
-    const fret_count = 12;
-    for (let i = 0; i < fret_count; i++) {
-      let x = this.#margin + (this.width - this.#margin) * (2 - 1.059463 ** (fret_count - i - 1));
-      let fret = new VerticalLine(x, 'fret');
-      fret.appendTo(this);
-      this.frets.push(fret);
+    // frets
+    for (const i of Array(this.constructor.num_frets).keys()) {
+      const x = this.constructor.margin_x +
+                (this.constructor.width - this.constructor.margin_x * 2)
+                * (2 - 1.059463 ** (this.constructor.num_frets - i - 1));
+      this.fret_positions.push(x);
+      const fret = new VerticalLine(x, this.constructor.height, 'fret');
+      this.appendChild(fret);
     }
 
+    // inlays
     for (const i of [3, 5, 7, 9, 12]) {
-      let x = (this.frets[i - 2].x + this.frets[i - 1].x) / 2;
-      (new Inlay(x, this.height / 2)).appendTo(this);
+      let x = (this.fret_positions[i - 2] + this.fret_positions[i - 1]) / 2;
+      const inlay = new Inlay(x, this.constructor.height / 2, 15);
+      this.appendChild(inlay);
     }
 
-    for (const str of GuitarString.sixStringStandard(this, this.#notes)) {
-      str.appendTo(this);
+    // strings
+    const gauges = [ .011, .014, .018, .028, .038, .049, ];
+    for (let i = 0; i < gauges.length; i++) {
+      const y = this.constructor.height / (gauges.length + 1) * (i + 1);
+      this.string_positions.push(y);
+      const line = new HorizontalLine(y, this.constructor.width, gauges[i] * 60, 'string');
+      this.appendChild(line);
     }
+
+    const mg = new MarkerGroup( this.fret_positions,
+                                this.string_positions,
+                                [[0], [1], [2], [3], [4], [5]]);
+    this.appendChild(mg);
   }
 }

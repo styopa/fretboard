@@ -1,9 +1,13 @@
-.fret, .nut, .inlay {
-  opacity: 95%;
+.fret, .nut {
+  opacity: 25%;
 }
 
-.fret, .nut, .string {
-  stroke: var(--bs-secondary);
+.string {
+  opacity: 50%;
+}
+
+.fret, .nut, .string, .mark, .hilite {
+  stroke: var(--bs-primary);
 }
 
 .fret {
@@ -15,17 +19,17 @@
 }
 
 .inlay {
-  fill: var(--bs-secondary);
+  fill: var(--bs-primary);
+  opacity: 10%;
 }
 
 .mark, .hilite {
-  stroke: var(--bs-primary);
   stroke-width: 1;
 }
 
 .mark {
   fill: var(--bs-light);
-  visibility: hidden;
+  /* visibility: hidden; */
   visibility: visible !important;
 }
 
@@ -36,4 +40,7 @@
 input#bpm {
   width: 6em;
   text-align: right;
+}
+
+.fretboard {
 }

@@ -33,8 +33,9 @@ window.addEventListener('load', () => {
 }, false);
 
 const notes = new Notes();
-const svg = document.getElementById('fretboard');
-const fretboard = new FretboardImage(svg, notes);
+const container = document.getElementById('fretboard_container');
+const fretboard = new FretboardImage(notes);
+container.appendChild(fretboard.element);
 const play_btn = document.getElementById('play_btn');
 let intervalId = undefined;
 play_btn.addEventListener('click', () => {
@@ -45,7 +46,7 @@ play_btn.addEventListener('click', () => {
   if (intervalId === undefined) {
     const delay = 60000 / parseInt(bpm_spinner.value, 10);
     intervalId = setInterval(() => {
-      fretboard.nextMark();
+      //fretboard.nextMark();
     }, delay);
   } else {
     clearInterval(intervalId);
