@@ -154,7 +154,7 @@ class Inlay extends SvgContainer {
 
 export class FretboardImage extends SvgContainer {
   static width = 1400;
-  static height = 200;
+  static height = 300;
   static margin_x = 20;
   static num_frets = 12;
   #notes;
@@ -208,7 +208,7 @@ export class FretboardImage extends SvgContainer {
 
     const mg = new MarkerGroup( this.fret_positions,
                                 this.string_positions,
-                                [[0], [1], [2], [3], [4], [5]]);
+                                [[0, 3], [1, 5], [2, 4], [3, 6], [4, 8], [5, 7]]);
     this.appendChild(mg);
   }
 }

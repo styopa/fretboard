@@ -6,31 +6,39 @@
   opacity: 50%;
 }
 
-.fret, .nut, .string, .mark, .hilite {
+.fret, .nut, .string, .marker, .hilite {
+  stroke: CanvasText;
+  /*
   stroke: var(--bs-primary);
+  */
 }
 
 .fret {
-  stroke-width: 4;
+  stroke-width: 6;
 }
 
 .nut {
-  stroke-width: 8;
+  stroke-width: 10;
 }
 
 .inlay {
+  fill: CanvasText;
+  /*
   fill: var(--bs-primary);
+  */
   opacity: 10%;
 }
 
-.mark, .hilite {
+.marker, .hilite {
   stroke-width: 1;
 }
 
-.mark {
-  fill: var(--bs-light);
+.marker {
+  fill: Canvas;
+  /*
+  fill-opacity: 0;
+  */
   /* visibility: hidden; */
-  visibility: visible !important;
 }
 
 .hilite {
@@ -40,7 +48,4 @@
 input#bpm {
   width: 6em;
   text-align: right;
-}
-
-.fretboard {
 }
