@@ -6,7 +6,7 @@
   opacity: 50%;
 }
 
-.fret, .nut, .string, .marker, .hilite {
+.fret, .nut, .string, .marker circle, .hilite {
   stroke: CanvasText;
   /*
   stroke: var(--bs-primary);
@@ -29,16 +29,19 @@
   opacity: 10%;
 }
 
-.marker, .hilite {
-  stroke-width: 1;
-}
-
-.marker {
+.marker circle {
   fill: Canvas;
+  stroke-width: 1;
   /*
   fill-opacity: 0;
   */
   /* visibility: hidden; */
+}
+
+.marker text {
+  dominant-baseline: central;
+  text-anchor: middle;
+  stroke: none;
 }
 
 .hilite {
