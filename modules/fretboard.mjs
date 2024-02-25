@@ -43,31 +43,6 @@ class HorizontalLine extends SvgContainer {
   }
 }
 
-class CustomSvgElement {
-  static namespace = 'http://www.w3.org/2000/svg';
-
-  element;
-
-  static createElement(name, attributes) {
-    const element = document.createElementNS(this.constructor.namespace, name);
-    for (const name in attributes) {
-      let attr = document.createAttribute(name);
-      attr.value = attributes[name];
-      element.setAttributeNode(attr);
-    }
-    return element;
-  }
-
-  constructor(name, attributes) {
-    this.element = this.constructor.createElement(name, attributes);
-  }
-
-  appendTo(parent) {
-    parent.element.appendChild(this.element);
-    return this;
-  }
-}
-
 class Group extends SvgContainer {
   constructor() {
     super('g');
@@ -80,14 +55,12 @@ class MarkerGroup extends Group {
   constructor(fret_positions, string_positions, selections) {
     super();
     // measure distance between strings, not between first string and edge
-    const diameter = string_positions[1] - string_positions[0];
+    const radius = (string_positions[1] - string_positions[0]) / 2;
     for (let i = 0; i < selections.length; i++) {
-      const y = string_positions[i] - diameter / 2;
-      //console.log(`String ${i}: y = ${y}`)
+      const y = string_positions[i];
       for (const pos of selections[i]) {
-        const x = fret_positions[pos] - diameter;
-        //console.log(x, y, diameter);
-        const marker = new Marker(x, y, diameter);
+        const x = fret_positions[pos] - radius;
+        const marker = new Marker(x, y, radius);
         this.markers.push(marker);
         this.appendChild(marker);
       }
@@ -102,41 +75,33 @@ class MarkerGroup extends Group {
 class Marker extends Group {
   circle;
   text;
-  #css_class;
 
-  constructor(x, y, diameter) {
-    super('g');
+  constructor(x, y, radius, label = '') {
+    super();
     this.setAttributes({
       class: 'marker',
     });
-    this.circle = new SvgContainer('circle');
-    this.circle.setAttributes({
-      cx: x + diameter / 2,
-      cy: y + diameter / 2,
-      r: diameter / 2 * 0.9,
+    const circle = new SvgContainer('circle');
+    circle.setAttributes({
+      cx: x,
+      cy: y,
+      r: radius * 0.9,
     });
-    this.appendChild(this.circle);
-    //this.text = this.constructor.createElement('text').appendTo(this);
-  }
-
-  select(text = '', css_class = undefined) {
-    this.text.innerText = text;
-    if (css_class !== undefined) {
-      this.#css_class = css_class;
-      this.element.classList.add(css_class);
-    }
-    this.element.style.visibility = 'visible';
-  }
-
-  unselect() {
-    this.element.style.visibility = 'hidden';
-    if (this.#css_class !== undefined) {
-      this.element.classList.remove(this.#css_class);
+    this.appendChild(circle);
+    if (label) {
+      const text = new SvgContainer('text');
+      text.element.textContent = label;
+      text.setAttributes({
+        x: x,
+        y: y,
+        'font-size': radius * 1.2,
+      })
+      this.appendChild(text);
     }
   }
 
   toggleHighlight() {
-    this.element.classList.toggle('highlight');
+    this.element.classList.toggle('hilite');
   }
 }
 
