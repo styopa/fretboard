@@ -1,5 +1,3 @@
-import { addAttr } from "./dom.mjs";
-
 class SvgContainer {
   static namespace = 'http://www.w3.org/2000/svg';
 
@@ -122,11 +120,10 @@ export class FretboardImage extends SvgContainer {
   static height = 300;
   static margin_x = 20;
   static num_frets = 12;
-  #notes;
   fret_positions = [];
   string_positions = [];
 
-  constructor(notes) {
+  constructor(tuning) {
     super('svg');
     this.setAttributes({
       viewBox: [
@@ -140,7 +137,6 @@ export class FretboardImage extends SvgContainer {
       class: 'fretboard',
       xmlns: this.constructor.namespace
     })
-    this.#notes = notes;
 
     const nut = new VerticalLine(this.constructor.margin_x, this.constructor.height, 'nut');
     this.appendChild(nut);
@@ -163,11 +159,12 @@ export class FretboardImage extends SvgContainer {
     }
 
     // strings
-    const gauges = [ .011, .014, .018, .028, .038, .049, ];
-    for (let i = 0; i < gauges.length; i++) {
-      const y = this.constructor.height / (gauges.length + 1) * (i + 1);
+    const gauges = [9, 12, 16, 24, 32, 44, 60, 80].map((i) => i / 1000);
+    const string_count = tuning.notes.length;
+    for (let i = 0; i < string_count; i++) {
+      const y = this.constructor.height / (string_count + 1) * (i + 1);
       this.string_positions.push(y);
-      const line = new HorizontalLine(y, this.constructor.width, gauges[i] * 60, 'string');
+      const line = new HorizontalLine(y, this.constructor.width, gauges[i] * 70, 'string');
       this.appendChild(line);
     }
 

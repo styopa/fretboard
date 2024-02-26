@@ -27,14 +27,29 @@ class CyclicArray extends Array {
 }
 
 export class Note {
+  static all;
+  static natural;
+
+  static {
+    const symbols = CyclicArray.from('C C♯ D D♯ E F F♯ G G♯ A B♭ B'.split(' '));
+    this.all = CyclicArray.from(symbols.map((s, i) => new this(s, i)));
+    this.natural = this.all.filter((note) => note.isNatural());
+  }
+
+  static fromSymbol(symbol) {
+    return this.all.find((note) => note.symbol == symbol.toUpperCase());
+  }
+
   symbol;
   index;
-  natural;
 
   constructor(symbol, i) {
     this.symbol = symbol;
     this.index = i;
-    this.natural = symbol.length == 1;
+  }
+
+  isNatural() {
+    return this.symbol.length == 1;
   }
 
   toClassName() {
@@ -53,20 +68,18 @@ export class Note {
   }
 }
 
-export class Notes {
-  all;
-  natural;
-
-  static {
-    Notes.symbols = CyclicArray.from('C C♯ D D♯ E F F♯ G G♯ A B♭ B'.split(' '));
+export class Tuning {
+  static sixStringStandard() {
+    return new this('eBGDAE');
   }
 
-  constructor() {
-    this.all = CyclicArray.from(Notes.symbols.map((s, i) => new Note(s, i)));
-    this.natural = this.all.filter((note) => note.natural);
+  static sixStringDropD() {
+    return new this('eBGDAD');
   }
 
-  find(symbol) {
-    return this.all.find((note) => note.symbol == symbol.toUpperCase());
+  notes;
+
+  constructor(symbols) {
+    this.notes = symbols.split('').map((s) => Note.fromSymbol(s));
   }
 }

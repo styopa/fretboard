@@ -1,17 +1,17 @@
-import { addChild, addText, addAttr } from "./modules/dom.mjs";
+import { addChild, addText } from "./modules/dom.mjs";
 import { FretboardImage } from "./modules/fretboard.mjs";
-import { Notes } from "./modules/note.mjs";
+import { Note, Tuning } from "./modules/note.mjs";
 
 function onNoteSelect(evt) {
   const digits = evt.currentTarget.id.match(/\d+/)[0];
-  const note = notes.all[parseInt(digits, 10)];
+  const note = Note.all[parseInt(digits, 10)];
   fretboard.mark(note);
   document.getElementById('play_btn').disabled = false;
 }
 
 function addButtons() {
   const radios = document.getElementById('note_radios');
-  for (const note of notes.all) {
+  for (const note of Note.all) {
     const id = `note_radio_${+note}`;
     const radio = addChild(radios, 'input', {
       type: 'radio',
@@ -32,9 +32,8 @@ window.addEventListener('load', () => {
   addButtons();
 }, false);
 
-const notes = new Notes();
 const container = document.getElementById('fretboard_container');
-const fretboard = new FretboardImage(notes);
+const fretboard = new FretboardImage(Tuning.sixStringStandard());
 container.appendChild(fretboard.element);
 const play_btn = document.getElementById('play_btn');
 let intervalId = undefined;
