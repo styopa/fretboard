@@ -20,12 +20,22 @@ class SvgContainer {
   }
 }
 
-class VerticalLine extends SvgContainer {
-  constructor(x, height, css_class) {
+class Nut extends SvgContainer {
+  constructor(x, height) {
     super('path');
     this.setAttributes({
       d: `M ${x} 0 V ${height}`,
-      class: css_class
+      class: 'nut'
+    });
+  }
+}
+
+class Frets extends SvgContainer {
+  constructor(fret_positions, height) {
+    super('path');
+    this.setAttributes({
+      d: fret_positions.map((x) => `M ${x} 0 V ${height}`).join(' '),
+      class: 'fret'
     });
   }
 }
@@ -138,7 +148,7 @@ export class FretboardImage extends SvgContainer {
       xmlns: this.constructor.namespace
     })
 
-    const nut = new VerticalLine(this.constructor.margin_x, this.constructor.height, 'nut');
+    const nut = new Nut(this.constructor.margin_x, this.constructor.height);
     this.appendChild(nut);
 
     // frets
@@ -147,9 +157,9 @@ export class FretboardImage extends SvgContainer {
                 (this.constructor.width - this.constructor.margin_x * 2)
                 * (2 - 1.059463 ** (this.constructor.num_frets - i - 1));
       this.fret_positions.push(x);
-      const fret = new VerticalLine(x, this.constructor.height, 'fret');
-      this.appendChild(fret);
     }
+    const frets = new Frets(this.fret_positions, this.constructor.height);
+    this.appendChild(frets);
 
     // inlays
     for (const i of [3, 5, 7, 9, 12]) {
