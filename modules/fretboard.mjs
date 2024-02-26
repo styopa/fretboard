@@ -1,3 +1,5 @@
+import { Note } from "./note.mjs";
+
 class SvgContainer {
   static namespace = 'http://www.w3.org/2000/svg';
 
@@ -170,7 +172,7 @@ export class FretboardImage extends SvgContainer {
 
     // strings
     const gauges = [9, 12, 16, 24, 32, 44, 60, 80].map((i) => i / 1000);
-    const string_count = tuning.notes.length;
+    const string_count = tuning.strings.length;
     for (let i = 0; i < string_count; i++) {
       const y = this.constructor.height / (string_count + 1) * (i + 1);
       this.string_positions.push(y);
@@ -178,9 +180,11 @@ export class FretboardImage extends SvgContainer {
       this.appendChild(line);
     }
 
+    const notes = Note.natural.randomElements(3);
+    console.log(notes.sort().join(' '));
     const mg = new MarkerGroup( this.fret_positions,
                                 this.string_positions,
-                                [[0, 3], [1, 5], [2, 4], [3, 6], [4, 8], [5, 7]]);
+                                tuning.findNotes(notes));
     this.appendChild(mg);
   }
 }

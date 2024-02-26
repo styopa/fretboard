@@ -77,9 +77,15 @@ export class Tuning {
     return new this('eBGDAD');
   }
 
-  notes;
+  strings;
 
   constructor(symbols) {
-    this.notes = symbols.split('').map((s) => Note.fromSymbol(s));
+    this.strings = symbols.split('').map((s) =>
+      Array.from(Note.all.since(Note.fromSymbol(s), 1))
+    );
+  }
+
+  findNotes(notes) {
+    return this.strings.map((string) => notes.map((note) => string.indexOf(note)));
   }
 }
