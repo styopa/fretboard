@@ -32,9 +32,6 @@
 .marker circle {
   fill: Canvas;
   stroke-width: 1;
-  /*
-  fill-opacity: 0;
-  */
   /* visibility: hidden; */
 }
 
@@ -48,7 +45,10 @@
   fill: var(--bs-primary) !important;
 }
 
-input#bpm {
-  width: 6em;
-  text-align: right;
-}
+.note-c { background-color: rgb(255 0 0 / 40%); }
+.note-d { background-color: rgb(255 128 0 / 40%); }
+.note-e { background-color: rgb(255 255 0 / 40%); }
+.note-f { background-color: rgb(0 255 0 / 40%); }
+.note-g { background-color: rgb(0 255 255 / 40%); }
+.note-a { background-color: rgb(0 128 255 / 40%); }
+.note-b { background-color: rgb(255 0 255 / 40%); }

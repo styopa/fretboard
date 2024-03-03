@@ -9,29 +9,6 @@ function onNoteSelect(evt) {
   document.getElementById('play_btn').disabled = false;
 }
 
-function addButtons() {
-  const radios = document.getElementById('note_radios');
-  for (const note of Note.all) {
-    const id = `note_radio_${+note}`;
-    const radio = addChild(radios, 'input', {
-      type: 'radio',
-      class: 'btn-check',
-      name: 'notes',
-      id: id,
-      autocomplete: 'off'
-    });
-    addChild(radios, 'label', {
-      class: 'btn btn-outline-primary',
-      for: id
-    }, note);
-    radio.addEventListener('change', onNoteSelect);
-  }
-}
-
-window.addEventListener('load', () => {
-  addButtons();
-}, false);
-
 const container = document.getElementById('fretboard_container');
 const fretboard = new FretboardImage(Tuning.sixStringStandard());
 container.appendChild(fretboard.element);
