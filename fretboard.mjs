@@ -1,6 +1,6 @@
 import { addChild, addText } from "./modules/dom.mjs";
 import { FretboardImage } from "./modules/fretboard.mjs";
-import { Note, Tuning } from "./modules/note.mjs";
+import { Note } from "./modules/note.mjs";
 
 function onNoteSelect(evt) {
   const digits = evt.currentTarget.id.match(/\d+/)[0];
@@ -9,9 +9,8 @@ function onNoteSelect(evt) {
   document.getElementById('play_btn').disabled = false;
 }
 
-const container = document.getElementById('fretboard_container');
-const fretboard = new FretboardImage(Tuning.sixStringStandard());
-container.appendChild(fretboard.element);
+const svg = document.getElementById('fretboard');
+const fretboard = new FretboardImage(svg);
 const play_btn = document.getElementById('play_btn');
 let intervalId = undefined;
 play_btn.addEventListener('click', () => {

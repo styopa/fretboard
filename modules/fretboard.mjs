@@ -1,4 +1,4 @@
-import { Note } from "./note.mjs";
+import { Note, Tuning } from "./note.mjs";
 
 class SvgContainer {
   static namespace = 'http://www.w3.org/2000/svg';
@@ -127,7 +127,7 @@ class Inlay extends SvgContainer {
   }
 }
 
-export class FretboardImage extends SvgContainer {
+export class FretboardImage {
   static width = 1400;
   static height = 300;
   static margin_x = 20;
@@ -135,23 +135,11 @@ export class FretboardImage extends SvgContainer {
   fret_positions = [];
   string_positions = [];
 
-  constructor(tuning) {
-    super('svg');
-    this.setAttributes({
-      viewBox: [
-        0,
-        0,
-        this.constructor.width,
-        this.constructor.height,
-      ].join(' '),
-      width: this.constructor.width,
-      height: this.constructor.height,
-      class: 'fretboard',
-      xmlns: this.constructor.namespace
-    })
+  constructor(svg) {
+    const tuning = Tuning.sixStringStandard();
 
     const nut = new Nut(this.constructor.margin_x, this.constructor.height);
-    this.appendChild(nut);
+    svg.appendChild(nut.element);
 
     // frets
     for (const i of Array(this.constructor.num_frets).keys()) {
@@ -161,13 +149,13 @@ export class FretboardImage extends SvgContainer {
       this.fret_positions.push(x);
     }
     const frets = new Frets(this.fret_positions, this.constructor.height);
-    this.appendChild(frets);
+    svg.appendChild(frets.element);
 
     // inlays
     for (const i of [3, 5, 7, 9, 12]) {
       let x = (this.fret_positions[i - 2] + this.fret_positions[i - 1]) / 2;
       const inlay = new Inlay(x, this.constructor.height / 2, 15);
-      this.appendChild(inlay);
+      svg.appendChild(inlay.element);
     }
 
     // strings
@@ -177,7 +165,7 @@ export class FretboardImage extends SvgContainer {
       const y = this.constructor.height / (string_count + 1) * (i + 1);
       this.string_positions.push(y);
       const line = new HorizontalLine(y, this.constructor.width, gauges[i] * 70, 'string');
-      this.appendChild(line);
+      svg.appendChild(line.element);
     }
 
     const notes = Note.natural.randomElements(3);
@@ -185,6 +173,6 @@ export class FretboardImage extends SvgContainer {
     const mg = new MarkerGroup( this.fret_positions,
                                 this.string_positions,
                                 tuning.findNotes(notes));
-    this.appendChild(mg);
+    svg.appendChild(mg.element);
   }
 }

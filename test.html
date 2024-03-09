@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Debug</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <meta charset="utf-8" />
+    <style>
+    div { border: 1px solid gray; margin: 1em; }
+    </style>
+  </head>
+  <body>
+    <div class="container" id="static">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 20" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: auto;">
+        <rect x="0" y="0" width="35" height="15" fill="green" />
+        <circle cx="35" cy="15" r="5" fill="blue" />
+      </svg>
+    </div>
+    <div class="container" id="dynamic">
+      <svg id="hack"xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 20" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: auto;">
+      </svg>
+    </div>
+    <script>
+    const createElem = function(name, attrs) {
+      const elem = document.createElementNS('http://www.w3.org/2000/svg', name);
+      for (const k in attrs) {
+        const attr = document.createAttribute(k);
+        attr.value = attrs[k];
+        elem.setAttributeNode(attr);
+      }
+      return elem;
+    };
+    const svg = document.getElementById('hack');
+    //const svg = createElem('svg', {viewBox: '0 0 40 20', preserveAspectRatio: 'xMidYMid meet', xmlns: 'http://www.w3.org/2000/svg', style: 'width: 100%; height: auto;'});
+    const rekt = createElem('rect', {x: 0, y: 0, width: 35, height: 15, fill: 'red'});
+    const circle = createElem('circle', {cx: 35, cy: 15, r: 5, fill: 'purple'});
+    svg.appendChild(rekt);
+    svg.appendChild(circle);
+    //dynamic.appendChild(svg);
+    </script>
+  </body>
+</html>

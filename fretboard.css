@@ -1,3 +1,8 @@
+.fretboard {
+  width: 100%;
+  height: auto;
+}
+
 .fret, .nut {
   opacity: 25%;
 }
