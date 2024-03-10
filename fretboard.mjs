@@ -7,8 +7,8 @@ const num_notes = document.getElementById('num_notes');
 const fretboard = new FretboardImage(svg);
 
 let intervalId = undefined;
-play_btn.addEventListener('click', () => {
-  document.getElementById('strike').textContent = 'Bootstrap';
+
+function toggleMetronome() {
   const bpm_spinner = document.getElementById('bpm');
   bpm_spinner.disabled = !bpm_spinner.disabled;
 
@@ -21,7 +21,7 @@ play_btn.addEventListener('click', () => {
     clearInterval(intervalId);
     intervalId = undefined;
   }
-}, false);
+}
 
 function randomizeNotes() {
   const n = parseInt(num_notes.value, 10);
@@ -42,3 +42,4 @@ function randomizeNotes() {
 
 rand_btn.addEventListener('click', randomizeNotes);
 num_notes.addEventListener('change', randomizeNotes);
+play_btn.addEventListener('click', toggleMetronome);
