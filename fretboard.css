@@ -35,9 +35,10 @@
 }
 
 .marker circle {
+  /*
   fill: Canvas;
+  */
   stroke-width: 1;
-  /* visibility: hidden; */
 }
 
 .marker text {
@@ -50,10 +51,37 @@
   fill: var(--bs-primary) !important;
 }
 
-.note-c { background-color: rgb(255 0 0 / 40%); }
-.note-d { background-color: rgb(255 128 0 / 40%); }
-.note-e { background-color: rgb(255 255 0 / 40%); }
-.note-f { background-color: rgb(0 255 0 / 40%); }
-.note-g { background-color: rgb(0 255 255 / 40%); }
-.note-a { background-color: rgb(0 128 255 / 40%); }
-.note-b { background-color: rgb(255 0 255 / 40%); }
+.note-c {
+  background-color: hsl(0deg 100% 50% / 40%);
+  fill: hsl(0deg 100% 50%);
+}
+
+.note-d {
+  background-color: hsl(45deg 100% 50% / 40%);
+  fill: hsl(45deg 100% 50%);
+}
+
+.note-e {
+  background-color: hsl(60deg 100% 50% / 40%);
+  fill: hsl(60deg 100% 50%);
+}
+
+.note-f {
+  background-color: hsl(120deg 100% 50% / 40%);
+  fill: hsl(120deg 100% 50%);
+}
+
+.note-g {
+  background-color: hsl(180deg 100% 50% / 40%);
+  fill: hsl(180deg 100% 50%);
+}
+
+.note-a {
+  background-color: hsl(194deg 100% 50% / 40%);
+  fill: hsl(194deg 100% 50%);
+}
+
+.note-b {
+  background-color: hsl(300deg 100% 50% / 40%);
+  fill: hsl(300deg 100% 50%);
+}

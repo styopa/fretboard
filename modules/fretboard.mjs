@@ -62,15 +62,15 @@ class Group extends SvgContainer {
 class MarkerGroup extends Group {
   markers = [];
 
-  constructor(fret_positions, string_positions, selections) {
+  constructor(fret_positions, string_positions, note_positions) {
     super();
     // measure distance between strings, not between first string and edge
     const radius = (string_positions[1] - string_positions[0]) / 2;
-    for (let i = 0; i < selections.length; i++) {
+    for (let i = 0; i < note_positions.length; i++) {
       const y = string_positions[i];
-      for (const pos of selections[i]) {
-        const x = fret_positions[pos] - radius;
-        const marker = new Marker(x, y, radius);
+      for (const pos of note_positions[i]) {
+        const x = fret_positions[pos.pos] - radius;
+        const marker = new Marker(x, y, radius, pos.note.toClassName(), pos.note);
         this.markers.push(marker);
         this.appendChild(marker);
       }
@@ -86,17 +86,19 @@ class Marker extends Group {
   circle;
   text;
 
-  constructor(x, y, radius, label = '') {
+  constructor(x, y, radius, css_class = undefined, label = '') {
     super();
     this.setAttributes({
       class: 'marker',
     });
     const circle = new SvgContainer('circle');
-    circle.setAttributes({
+    const attrs = {
       cx: x,
       cy: y,
       r: radius * 0.9,
-    });
+    };
+    if (css_class) attrs.class = css_class;
+    circle.setAttributes(attrs);
     this.appendChild(circle);
     if (label) {
       const text = new SvgContainer('text');
@@ -134,9 +136,14 @@ export class FretboardImage {
   static num_frets = 12;
   fret_positions = [];
   string_positions = [];
+  tuning = undefined;
+  markers = undefined;
+  svg = undefined;
 
   constructor(svg) {
-    const tuning = Tuning.sixStringStandard();
+    this.tuning = Tuning.sixStringStandard();
+    this.markers = undefined;
+    this.svg = svg;
 
     const nut = new Nut(this.constructor.margin_x, this.constructor.height);
     svg.appendChild(nut.element);
@@ -160,19 +167,29 @@ export class FretboardImage {
 
     // strings
     const gauges = [9, 12, 16, 24, 32, 44, 60, 80].map((i) => i / 1000);
-    const string_count = tuning.strings.length;
+    const string_count = this.tuning.strings.length;
     for (let i = 0; i < string_count; i++) {
       const y = this.constructor.height / (string_count + 1) * (i + 1);
       this.string_positions.push(y);
       const line = new HorizontalLine(y, this.constructor.width, gauges[i] * 70, 'string');
       svg.appendChild(line.element);
     }
+  }
 
-    const notes = Note.natural.randomElements(3);
-    console.log(notes.sort().join(' '));
-    const mg = new MarkerGroup( this.fret_positions,
-                                this.string_positions,
-                                tuning.findNotes(notes));
-    svg.appendChild(mg.element);
+  selectRandomNotes(n) {
+    const notes = Note.natural.randomElements(n);
+    const markers = new MarkerGroup(
+      this.fret_positions,
+      this.string_positions,
+      this.tuning.findNotes(notes),
+      notes
+    );
+    if (this.markers === undefined) {
+      this.svg.appendChild(markers.element);
+    } else {
+      this.svg.replaceChild(markers.element, this.markers.element)
+    }
+    this.markers = markers;
+    return notes;
   }
 }

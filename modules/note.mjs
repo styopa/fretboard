@@ -53,7 +53,7 @@ export class Note {
   }
 
   toClassName() {
-    return this.symbol.toLowerCase()
+    return `note-${this.symbol.toLowerCase()}`
       .replace('♯', 'sharp')
       .replace('♭', 'flat');
   }
@@ -86,6 +86,6 @@ export class Tuning {
   }
 
   findNotes(notes) {
-    return this.strings.map((string) => notes.map((note) => string.indexOf(note)));
+    return this.strings.map((string) => notes.map((note) => ({pos: string.indexOf(note), note: note})));
   }
 }
