@@ -86,6 +86,6 @@ export class Tuning {
   }
 
   findNotes(notes) {
-    return this.strings.map((string) => notes.map((note) => ({pos: string.indexOf(note), note: note})));
+    return this.strings.map((string) => notes.toReversed().map((note) => ({pos: string.indexOf(note), note: note})));
   }
 }

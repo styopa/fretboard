@@ -24,13 +24,15 @@ function toggleMetronome() {
   btn_play.textContent = input_bpm.disabled ? 'Stop' : 'Play';
 
   if (intervalId === undefined) {
+    svg_fretboard.markers.selectAll(false);
     const delay = 60000 / parseInt(bpm.value, 10);
     intervalId = setInterval(() => {
-      //fretboard.nextMark();
+      svg_fretboard.markers.selectNext();
     }, delay);
   } else {
     clearInterval(intervalId);
     intervalId = undefined;
+    svg_fretboard.markers.selectAll(true);
   }
 }
 

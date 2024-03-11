@@ -60,7 +60,9 @@ class Group extends SvgContainer {
 }
 
 class MarkerGroup extends Group {
-  markers = [];
+  items = [];
+  i;
+  direction;
 
   constructor(fret_positions, string_positions, note_positions) {
     super();
@@ -71,18 +73,38 @@ class MarkerGroup extends Group {
       for (const pos of note_positions[i]) {
         const x = fret_positions[pos.pos] - radius;
         const marker = new Marker(x, y, radius, pos.note.toClassName(), pos.note);
-        this.markers.push(marker);
+        this.items.push({marker: marker, note: pos.note});
         this.appendChild(marker);
       }
     }
   }
 
-  clearSelection() {
-    this.markers.map((marker) => marker.unselect());
+  setDirection(direction) {
+    this.direction = (direction == 0) ? 0 : (direction / direction);
+  }
+
+  selectNext() {
+    if (this.i === undefined) {
+      // first iteration
+      this.i = 0;
+    } else {
+      this.items[this.i].marker.setSelection(false);
+      this.i = (this.i + 1) % this.items.length;
+    }
+    const current = this.items[this.i];
+    current.marker.setSelection(true);
+    return current.note;
+  }
+
+  selectAll(value = true) {
+    this.items.map((item) => item.marker.setSelection(value));
+    this.i = undefined;
   }
 }
 
 class Marker extends Group {
+  static unselected = 'unselected';
+
   circle;
   text;
 
@@ -112,8 +134,12 @@ class Marker extends Group {
     }
   }
 
-  toggleHighlight() {
-    this.element.classList.toggle('hilite');
+  setSelection(value) {
+    if (value) {
+      this.element.classList.remove(this.constructor.unselected);
+    } else {
+      this.element.classList.add(this.constructor.unselected);
+    }
   }
 }
 
@@ -181,8 +207,7 @@ export class FretboardImage {
     const markers = new MarkerGroup(
       this.fret_positions,
       this.string_positions,
-      this.tuning.findNotes(notes),
-      notes
+      this.tuning.findNotes(notes)
     );
     if (this.markers === undefined) {
       this.svg.appendChild(markers.element);

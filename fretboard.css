@@ -47,8 +47,8 @@
   stroke: none;
 }
 
-.hilite {
-  fill: var(--bs-primary) !important;
+.unselected circle {
+  fill: Canvas !important;
 }
 
 .note-c {
