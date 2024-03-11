@@ -1,19 +1,30 @@
 import { FretboardImage } from "./modules/fretboard.mjs";
 
 const svg = document.getElementById('fretboard');
-const rand_btn = document.getElementById('new_notes');
-const play_btn = document.getElementById('play_btn');
-const num_notes = document.getElementById('num_notes');
-const fretboard = new FretboardImage(svg);
+const btn_randomize = document.getElementById('new_notes');
+const btn_play = document.getElementById('play_btn');
+const input_num_notes = document.getElementById('num_notes');
+const input_direction = document.getElementById('direction');
+const input_bpm = document.getElementById('bpm');
+const svg_fretboard = new FretboardImage(svg);
 
 let intervalId = undefined;
 
+function toggleForms() {
+  [
+    input_num_notes,
+    btn_randomize,
+    input_direction,
+    input_bpm,
+  ].map((elem) => elem.disabled = !elem.disabled);
+}
+
 function toggleMetronome() {
-  const bpm_spinner = document.getElementById('bpm');
-  bpm_spinner.disabled = !bpm_spinner.disabled;
+  toggleForms();
+  btn_play.textContent = input_bpm.disabled ? 'Stop' : 'Play';
 
   if (intervalId === undefined) {
-    const delay = 60000 / parseInt(bpm_spinner.value, 10);
+    const delay = 60000 / parseInt(bpm.value, 10);
     intervalId = setInterval(() => {
       //fretboard.nextMark();
     }, delay);
@@ -24,8 +35,8 @@ function toggleMetronome() {
 }
 
 function randomizeNotes() {
-  const n = parseInt(num_notes.value, 10);
-  const notes = fretboard.selectRandomNotes(n);
+  const n = parseInt(input_num_notes.value, 10);
+  const notes = svg_fretboard.selectRandomNotes(n);
   const selected_notes = document.getElementById('selected_notes');
   while (selected_notes.firstChild) {
     selected_notes.removeChild(selected_notes.firstChild);
@@ -40,6 +51,9 @@ function randomizeNotes() {
   }
 }
 
-rand_btn.addEventListener('click', randomizeNotes);
-num_notes.addEventListener('change', randomizeNotes);
-play_btn.addEventListener('click', toggleMetronome);
+btn_randomize.addEventListener('click', randomizeNotes);
+input_num_notes.addEventListener('change', randomizeNotes);
+btn_play.addEventListener('click', toggleMetronome);
+document.addEventListener('readystatechange', () => {
+  if (document.readyState === 'complete') randomizeNotes();
+})
