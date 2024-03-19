@@ -62,7 +62,7 @@ class Group extends SvgContainer {
 class MarkerGroup extends Group {
   items = [];
   i;
-  direction;
+  #step = undefined;
 
   constructor(fret_positions, string_positions, note_positions) {
     super();
@@ -73,23 +73,30 @@ class MarkerGroup extends Group {
       for (const pos of note_positions[i]) {
         const x = fret_positions[pos.pos] - radius;
         const marker = new Marker(x, y, radius, pos.note.toClassName(), pos.note);
-        this.items.push({marker: marker, note: pos.note});
+        // unshift because Tuning returns them in reverse order
+        this.items.unshift({marker: marker, note: pos.note});
         this.appendChild(marker);
       }
     }
   }
 
-  setDirection(direction) {
-    this.direction = (direction == 0) ? 0 : (direction / direction);
-  }
-
-  selectNext() {
+  selectNext(start_forward, bounce) {
     if (this.i === undefined) {
       // first iteration
-      this.i = 0;
+      this.i = start_forward ? 0 : this.items.length - 1;
+      this.#step = start_forward ? 1 : -1;
     } else {
       this.items[this.i].marker.setSelection(false);
-      this.i = (this.i + 1) % this.items.length;
+      this.i += this.#step;
+      const wrapped = (this.i + this.items.length) % this.items.length;
+      if (this.i != wrapped) {
+        if (bounce) {
+          this.#step *= -1;
+          this.i += this.#step * 2;
+        } else {
+          this.i = wrapped;
+        }
+      }
     }
     const current = this.items[this.i];
     current.marker.setSelection(true);

@@ -25,9 +25,21 @@ function toggleMetronome() {
 
   if (intervalId === undefined) {
     svg_fretboard.markers.selectAll(false);
+    const direction = parseInt(input_direction.value, 10);
+    let start_forward, bounce;
+    switch (direction) {
+      case 1:
+        start_forward = true, bounce = false;
+        break;
+      case -1:
+        start_forward = false, bounce = false;
+        break;
+      default:
+        start_forward = true, bounce = true;
+    }
     const delay = 60000 / parseInt(bpm.value, 10);
     intervalId = setInterval(() => {
-      svg_fretboard.markers.selectNext();
+      svg_fretboard.markers.selectNext(start_forward, bounce);
     }, delay);
   } else {
     clearInterval(intervalId);
