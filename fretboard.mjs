@@ -39,6 +39,7 @@ function toggleMetronome() {
     }
     const delay = 60000 / parseInt(bpm.value, 10);
     intervalId = setInterval(() => {
+      tick.play();
       svg_fretboard.markers.selectNext(start_forward, bounce);
     }, delay);
   } else {
@@ -65,6 +66,7 @@ function randomizeNotes() {
   }
 }
 
+const tick = new Audio('media/tick.ogg');
 btn_randomize.addEventListener('click', randomizeNotes);
 input_num_notes.addEventListener('change', randomizeNotes);
 btn_play.addEventListener('click', toggleMetronome);
