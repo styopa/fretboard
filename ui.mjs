@@ -12,12 +12,13 @@ const svg_fretboard = new FretboardImage(svg);
 let intervalId = undefined;
 
 function toggleForms() {
-  [
-    input_num_notes,
-    btn_randomize,
-    input_direction,
-    input_bpm,
-  ].map((elem) => elem.disabled = !elem.disabled);
+  const toggle = function (elem) {
+    if (elem !== btn_play) elem.disabled = !elem.disabled
+  };
+  const controls = document.getElementById('controls');
+  for (const tag of 'button input select'.split(' ')) {
+    Array.from(controls.getElementsByTagName(tag)).map(toggle);
+  }
 }
 
 function toggleMetronome() {
