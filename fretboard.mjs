@@ -1,4 +1,5 @@
 import { FretboardImage } from "./modules/fretboard.mjs";
+import { Metronome } from "./modules/metronome.mjs";
 
 const svg = document.getElementById('fretboard');
 const btn_randomize = document.getElementById('new_notes');
@@ -39,8 +40,8 @@ function toggleMetronome() {
     }
     const delay = 60000 / parseInt(bpm.value, 10);
     intervalId = setInterval(() => {
-      tick.play();
-      svg_fretboard.markers.selectNext(start_forward, bounce);
+      const note = svg_fretboard.markers.selectNext(start_forward, bounce);
+      metronome.play(note);
     }, delay);
   } else {
     clearInterval(intervalId);
@@ -66,10 +67,13 @@ function randomizeNotes() {
   }
 }
 
-const tick = new Audio('media/tick.ogg');
+let metronome = undefined;
 btn_randomize.addEventListener('click', randomizeNotes);
 input_num_notes.addEventListener('change', randomizeNotes);
-btn_play.addEventListener('click', toggleMetronome);
+btn_play.addEventListener('click', () => {
+  if (metronome === undefined) metronome = new Metronome();
+  toggleMetronome();
+});
 document.addEventListener('readystatechange', () => {
   if (document.readyState === 'complete') randomizeNotes();
 })
