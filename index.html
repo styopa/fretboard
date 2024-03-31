@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="fretboard.css" />
   </head>
   <body>
-    <h1 class="display-1 my-1 text-center">Learn the Fretboard</h1>
+    <h1 class="my-1 text-center">Learn the Fretboard</h1>
     <div class="my-3 container">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 300" class="fretboard" id="fretboard"></svg>
     </div>
@@ -23,20 +23,20 @@
       </ul>
       <div class="tab-content border-bottom py-3">
         <div class="tab-pane fade show active" id="notes-tab-pane" role="tabpanel" aria-labelledby="notes-tab" tabindex="0">
-          <div class="row mb-1">
-            <div class="col-2">
-              <label for="num_notes" class="col-form-label">Number of notes:</label>
+          <div class="row gy-1 mb-1">
+            <div class="col-sm-3">
+              <label for="num_notes" class="col-sm-form-label">Number of notes:</label>
             </div>
-            <div class="col-3">
+            <div class="col-sm-4">
               <input class="form-control" type="number" id="num_notes" min="1" max="7" value="1" />
             </div>
           </div>
-          <div class="row mt-1">
-            <div class="col-2">
-              <label for="selected_notes" class="col-form-label">Practice notes:</label>
+          <div class="row gy-1 mt-1">
+            <div class="col-sm-3">
+              <label for="selected_notes" class="col-sm-form-label">Practice notes:</label>
             </div>
-            <div class="col-3 col-form-label" id="selected_notes"></div>
-            <div class="col-2 d-grid gap-2">
+            <div class="col-sm-4 col-sm-form-label" id="selected_notes"></div>
+            <div class="col-sm-3 d-grid gap-2">
               <button id="new_notes" class="btn btn-sm btn-primary">Randomize</button>
             </div>
           </div>
@@ -44,11 +44,11 @@
         <div class="tab-pane fade" id="scales-tab-pane" role="tabpanel" aria-labelledby="scales-tab" tabindex="0">Scales go here</div>
       </div>
       <div class="mt-4 container px-0">
-        <div class="row mb-1">
-          <div class="col-2">
-            <label for="direction" class="col-form-label">Direction:</label>
+        <div class="row gy-1 mb-1">
+          <div class="col-sm-3">
+            <label for="direction" class="col-sm-form-label">Direction:</label>
           </div>
-          <div class="col-3">
+          <div class="col-sm-4">
             <select id="direction" class="form-select form-control">
               <option selected="selected" value="0">Back and forth</option>
               <option value="1">Low string to high, forward</option>
@@ -56,14 +56,14 @@
             </select>
           </div>
         </div>
-        <div class="row mb-1">
-          <div class="col-2">
-            <label for="bpm" class="col-form-label">Metronome BPM:</label>
+        <div class="row gy-1 mb-1">
+          <div class="col-sm-3">
+            <label for="bpm" class="col-sm-form-label">BPM:</label>
           </div>
-          <div class="col-3">
+          <div class="col-sm-4">
             <input class="form-control" type="number" id="bpm" min="1" max="200" value="40" />
           </div>
-          <div class="col-2 d-grid gap-2">
+          <div class="col-sm-3 d-grid gap-2">
             <button id="play_btn" class="btn btn-primary" data-bs-toggle="button">Play</button>
           </div>
         </div>
