@@ -7,7 +7,7 @@ export class Metronome {
   #a_aeolian;
 
   constructor() {
-    this.#a_aeolian = Array.from(Note.natural.since(Note.fromSymbol('A')));
+    this.#a_aeolian = Array.from(Note.all.since(Note.fromSymbol('A')));
     this.#context = new window.AudioContext();
 
     this.#gain = new GainNode(this.#context);
